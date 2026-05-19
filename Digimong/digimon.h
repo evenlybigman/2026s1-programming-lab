@@ -32,7 +32,7 @@ typedef enum {
 } DigimonType;
 
 typedef struct {
-    char name[10]; // 디지몬 이름
+    char name[100]; // 디지몬 이름
     Level level; // 진화 단계
     DigimonType type; // 타입
     // 보이는 정보
@@ -51,6 +51,9 @@ typedef struct {
     int battles; // 디지몬 배틀 횟수
     int dp; // 없으면 전투 불가 
     int max_dp; // 최대 dp (진화 단계마다 다름)
+    //안보이는 정보
+    bool is_old;  // 진화 시기 놓친 상태
+    time_t injury_time;
 }Digimon;
 
 typedef struct DigimonDex{ // 디지몬 도감
@@ -59,7 +62,7 @@ typedef struct DigimonDex{ // 디지몬 도감
 }DigimonDex;
 
 typedef struct {
-    char name[10]; // 테이머 이름
+    char name[100]; // 테이머 이름
     int battles; // 전적 
     DigimonDex dex[MAX_DIGIMON_SIZE];
 }Tamer;
@@ -73,17 +76,25 @@ typedef struct GameData {
 typedef struct {
     char name[100];
     Level level;
-    int base_atk;
+    int base_power;
     int base_weight;
     DigimonType type;
+    int hungry_tick;
+    int strength_tick;
+    int poop_tick;
+    int sleep_hour;   // 취침 시각 (시)
+    int wake_hour;    // 기상 시각 (시)
 } DigimonInfo;
 
 extern int max_dp_table[];
 extern DigimonInfo digimon_table[];
 
-void check_death(GameData *game);
-void check_call(GameData *game);
-void update_status(GameData *game);
-void check_evolution(GameData *game);
+bool check_death(GameData *game);      // 사망 조건 체크 → 1 or 0
+void handle_death(GameData *game);     // 사망 처리
+bool check_call(GameData *game);       // 콜 체크
+void update_status(GameData *game);    // 매 틱 수치 변화
+void apply_offline_time(GameData *game); // 껐다 켤 때 경과 시간 반영
+void check_evolution(GameData *game);  // 진화 조건 체크
+void init_digimon(GameData *game);     // 새 디지몬 초기화
 
 #endif

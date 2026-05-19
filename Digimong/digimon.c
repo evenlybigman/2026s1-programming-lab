@@ -1,27 +1,26 @@
 #include "digimon.h"
 
 int max_dp_table[] = {0, 0, 0, 14, 28, 42, 56, 70};
-// EGG BABY1 BABY2 ROOKIE CHAMPION ULTIMATE MEGA
 
-DigimonInfo digimon_table[] = { // power weight 임시
-    // name        level      base_power  base_weight  type
-    {"깜몬",       BABY1,     4,          10,          FREE},
-    {"코로몬",     BABY2,     8,          10,          FREE},
-    {"아구몬",     ROOKIE,    30,         20,          VACCINE},
-    {"베타몬",     ROOKIE,    25,         20,          DATA},
-    {"그레이몬",   CHAMPION,  60,         35,          VACCINE},
-    {"데블몬",     CHAMPION,  55,         30,          VIRUS},
-    {"에어드라몬", CHAMPION,  50,         25,          VACCINE},
-    {"티라노몬",   CHAMPION,  52,         35,          VIRUS},
-    {"메라몬",     CHAMPION,  58,         30,          VIRUS},
-    {"시드라몬",   CHAMPION,  56,         30,          DATA},
-    {"워매몬",     CHAMPION,  48,         25,          FREE},
-    {"메탈그레이몬", ULTIMATE, 100,       40,          VACCINE},
-    {"콩알몬",     ULTIMATE,  85,         20,          FREE},
-    {"퍼펫몬",     ULTIMATE,  90,         30,          VIRUS},
-    {"블리츠그레이몬", MEGA,  150,        45,          VACCINE},
-    {"반초콩알몬", MEGA,      130,        25,          FREE},
-    {"오메가몬",   MEGA,      200,        50,          VACCINE},
+DigimonInfo digimon_table[] = {
+// name         level     power  weight  type   hungry  strength  poop   sleep  wake
+{"깜몬",         BABY1,     0,     10,    FREE,    1800,   1800,    3600,  21,    7},
+{"코로몬",       BABY2,     0,     10,    FREE,    1800,   1800,    3600,  21,    7},
+{"아구몬",       ROOKIE,    18,    20,    VACCINE, 1800,   1800,    3600,  21,    7},
+{"베타몬",       ROOKIE,    10,    20,    VIRUS,   1800,   1800,    3600,  21,    7},
+{"그레이몬",     CHAMPION,  75,    35,    VACCINE, 1800,   1800,    3600,  22,    7},
+{"데블몬",       CHAMPION,  65,    30,    VIRUS,   1800,   1800,    3600,  22,    7},
+{"에어드라몬",   CHAMPION,  55,    25,    VACCINE, 1800,   1800,    3600,  22,    7},
+{"티라노몬",     CHAMPION,  70,    35,    DATA,    1800,   1800,    3600,  22,    7},
+{"메라몬",       CHAMPION,  60,    30,    DATA,    1800,   1800,    3600,  22,    7},
+{"시드라몬",     CHAMPION,  50,    30,    DATA,    1800,   1800,    3600,  22,    7},
+{"워매몬",       CHAMPION,  40,    25,    VIRUS,   1800,   1800,    3600,  22,    7},
+{"메탈그레이몬",  ULTIMATE,  126,   40,    VIRUS,   1800,   1800,    3600,  23,    7},
+{"콩알몬",       ULTIMATE,  118,   20,    DATA,    1800,   1800,    3600,  23,    7},
+{"퍼펫몬",       ULTIMATE,  107,   30,    VACCINE, 1800,   1800,    3600,  23,    7},
+{"블리츠그레이몬", MEGA,     188,   45,    VIRUS,   1800,   1800,    3600,  23,    7},
+{"반초콩알몬",    MEGA,      176,   25,    DATA,    1800,   1800,    3600,  23,    7},
+{"오메가몬",      MEGA,      200,   50,    VACCINE, 1800,   1800,    3600,  23,    7},
 };
 
 int evolution_time[] = { 
@@ -33,6 +32,16 @@ int evolution_time[] = {
     172800 // 완전체 -> 궁극체 (48시간)
 };
 
-void update_status(GameData *game) {
+bool check_death(GameData *game) {
+    if (game->current.care_mistakes >= 20 || )
+}
+
+bool check_death(GameData *game) { // 사망 조건 체크 → 1 or 0
     
 }
+void handle_death(GameData *game);     // 사망 처리
+bool check_call(GameData *game);       // 콜 체크
+void update_status(GameData *game);    // 매 틱 수치 변화
+void apply_offline_time(GameData *game); // 껐다 켤 때 경과 시간 반영
+void check_evolution(GameData *game);  // 진화 조건 체크
+void init_digimon(GameData *game);     // 새 디지몬 초기화
