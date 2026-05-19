@@ -1,13 +1,12 @@
 #ifndef DIGIMON_H
 #define DIGIMON_H
 
-#define MAX_DIGIMON_SIZE 100
-#define SPRITE_W 32
-#define SPRITE_H 16
-
 #include <time.h>
 #include <stdbool.h>
 
+#define MAX_DIGIMON_SIZE 100
+#define SPRITE_W 32
+#define SPRITE_H 16
 #define MAX_AGE 99
 #define MAX_WEIGHT 99
 #define MAX_HUNGRY 4
@@ -32,9 +31,6 @@ typedef enum {
     FREE      // 프리
 } DigimonType;
 
-int max_dp_table[] = {0, 0, 0, 14, 28, 42, 56, 70};
-// EGG BABY1 BABY2 ROOKIE CHAMPION ULTIMATE MEGA
-
 typedef struct {
     char name[10]; // 디지몬 이름
     Level level; // 진화 단계
@@ -58,6 +54,7 @@ typedef struct {
 }Digimon;
 
 typedef struct DigimonDex{ // 디지몬 도감
+    char name[100];
     bool clear; // 1이면 찾음 0이면 못찾음
 }DigimonDex;
 
@@ -81,26 +78,8 @@ typedef struct {
     DigimonType type;
 } DigimonInfo;
 
-DigimonInfo digimon_table[] = { // power weight 임시
-    // name        level      base_power  base_weight  type
-    {"깜몬",       BABY1,     4,          10,          FREE},
-    {"코로몬",     BABY2,     8,          10,          FREE},
-    {"아구몬",     ROOKIE,    30,         20,          VACCINE},
-    {"베타몬",     ROOKIE,    25,         20,          DATA},
-    {"그레이몬",   CHAMPION,  60,         35,          VACCINE},
-    {"데블몬",     CHAMPION,  55,         30,          VIRUS},
-    {"에어드라몬", CHAMPION,  50,         25,          VACCINE},
-    {"티라노몬",   CHAMPION,  52,         35,          VIRUS},
-    {"메라몬",     CHAMPION,  58,         30,          VIRUS},
-    {"시드라몬",   CHAMPION,  56,         30,          DATA},
-    {"워매몬",     CHAMPION,  48,         25,          FREE},
-    {"메탈그레이몬", ULTIMATE, 100,       40,          VACCINE},
-    {"콩알몬",     ULTIMATE,  85,         20,          FREE},
-    {"퍼펫몬",     ULTIMATE,  90,         30,          VIRUS},
-    {"블리츠그레이몬", MEGA,  150,        45,          VACCINE},
-    {"반초콩알몬", MEGA,      130,        25,          FREE},
-    {"오메가몬",   MEGA,      200,        50,          VACCINE},
-};
+extern int max_dp_table[];
+extern DigimonInfo digimon_table[];
 
 void check_death(GameData *game);
 void check_call(GameData *game);
