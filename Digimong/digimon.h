@@ -6,6 +6,14 @@
 #define SPRITE_H 16
 
 #include <time.h>
+#include <stdbool.h>
+
+#define MAX_AGE 99
+#define MAX_WEIGHT 99
+#define MAX_HUNGRY 4
+#define MAX_STRENGTH 4
+#define MAX_CARE_MISTAKES 20
+#define MAX_POOP 8
 
 typedef enum {
     EGG, // 0 - 알
@@ -17,35 +25,86 @@ typedef enum {
     MEGA // 6 - 궁극체
 } Level;
 
-int evolution_time[] = { 
-    60, // 알 -> 유년기 (1분)
-    600, // 유년기1 -> 유년기2 (10분)
-    21600, // 유년기2 -> 성장기 (6시간)
-    86400, // 성장기 -> 성숙기 (24시간)
-    129600, // 성숙기 -> 완전체 (36시간)
-    172800 // 완전체 -> 궁극체 (48시간)
-};
+typedef enum {
+    VACCINE,  // 백신
+    DATA,     // 데이터
+    VIRUS,    // 바이러스
+    FREE      // 프리
+} DigimonType;
+
+int max_dp_table[] = {0, 0, 0, 14, 28, 42, 56, 70};
+// EGG BABY1 BABY2 ROOKIE CHAMPION ULTIMATE MEGA
 
 typedef struct {
     char name[10]; // 디지몬 이름
     Level level; // 진화 단계
+    DigimonType type; // 타입
+    // 보이는 정보
     int age; // 나이 (자정 0시 마다 + 1)
-    int weight; // 체중 (g) (최저 체중 디지몬 마다 다름, 최대 체중은 99) 99g일시 근력 최대시 공격력 최대 +16 효과 무효
+    int weight; // 체중 (g) 최대99 (최저 체중 디지몬 마다 다름, 최대 체중은 99) 99g일시 근력 최대시 공격력 최대 +16 효과 무효
     int hungry; // 배고픔 0~4 (먹이 먹으면 + 1) 4에서 더먹여서 만복 시 배 느리게 꺼짐, 진화 조건 배고픔 0 12시간 사망 + 공격력 최대 +16 효과 무효
+    int overfeed; // 과식 고기 거부시 +1 이후 다시 과식 시킬려면 배고픔 3이하
     int strength; // 근력 0~4 (훈련하거나 프로틴 먹이면 증가) 1칸당 공격력 + 4
-    int happy; // 
-    int fatigue;
-    int effort;
-    int battles;
-    int type;
-    int dp;
-    int atk;
+    int poop; // 똥 8개 쌓이면 부상
+    int care_mistakes; // 케어미스 2이하 규칙적 3이상 불규칙 20 사망 
+    int sleep; // 수면 1시간 수면 파워 10증가 3시간 수면 후 파워 완전 회복 유아기 잠 불가 유년기2는 파워 증가 x
+    bool is_sleep;  // 자는동안 허기 체력 감소 x 낮잠은 진화시간 멈춤
+    int injuries; // 부상 조건 
+    bool is_injuries; // 현재 부상상태 
+    int effort; // 노력 훈련 4마다 1증가
+    int battles; // 디지몬 배틀 횟수
+    int dp; // 없으면 전투 불가 
+    int max_dp; // 최대 dp (진화 단계마다 다름)
 }Digimon;
 
-typedef struct {
-    char name[10];
-    int battles;
+typedef struct DigimonDex{ // 디지몬 도감
+    bool clear; // 1이면 찾음 0이면 못찾음
+}DigimonDex;
 
+typedef struct {
+    char name[10]; // 테이머 이름
+    int battles; // 전적 
+    DigimonDex dex[MAX_DIGIMON_SIZE];
 }Tamer;
+
+typedef struct GameData {
+    Tamer tamer;
+    Digimon current;
+    time_t last_update; 
+}GameData;
+
+typedef struct {
+    char name[100];
+    Level level;
+    int base_atk;
+    int base_weight;
+    DigimonType type;
+} DigimonInfo;
+
+DigimonInfo digimon_table[] = { // power weight 임시
+    // name        level      base_power  base_weight  type
+    {"깜몬",       BABY1,     4,          10,          FREE},
+    {"코로몬",     BABY2,     8,          10,          FREE},
+    {"아구몬",     ROOKIE,    30,         20,          VACCINE},
+    {"베타몬",     ROOKIE,    25,         20,          DATA},
+    {"그레이몬",   CHAMPION,  60,         35,          VACCINE},
+    {"데블몬",     CHAMPION,  55,         30,          VIRUS},
+    {"에어드라몬", CHAMPION,  50,         25,          VACCINE},
+    {"티라노몬",   CHAMPION,  52,         35,          VIRUS},
+    {"메라몬",     CHAMPION,  58,         30,          VIRUS},
+    {"시드라몬",   CHAMPION,  56,         30,          DATA},
+    {"워매몬",     CHAMPION,  48,         25,          FREE},
+    {"메탈그레이몬", ULTIMATE, 100,       40,          VACCINE},
+    {"콩알몬",     ULTIMATE,  85,         20,          FREE},
+    {"퍼펫몬",     ULTIMATE,  90,         30,          VIRUS},
+    {"블리츠그레이몬", MEGA,  150,        45,          VACCINE},
+    {"반초콩알몬", MEGA,      130,        25,          FREE},
+    {"오메가몬",   MEGA,      200,        50,          VACCINE},
+};
+
+void check_death(GameData *game);
+void check_call(GameData *game);
+void update_status(GameData *game);
+void check_evolution(GameData *game);
 
 #endif
