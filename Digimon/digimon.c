@@ -256,6 +256,7 @@ void init_digimon(GameData* game) {
 
     // 시간
     time_t now = time(NULL);
+    d->overfeed_time      = 0;
     d->hungry_zero_time   = now;
     d->strength_zero_time = now;
     d->injury_time        = now;
@@ -290,8 +291,14 @@ void update_status(GameData* game) {
     /* 수면 중에는 배고픔/근력/똥 변화 없음 */
     if (!d->is_sleep) {
         /* 배고픔 감소 + 똥 증가 */
-        int tick = info->hungry_tick * (d->is_overfed ? 2 : 1);
-        if (now - d->last_hungry_tick >= tick) {
+        /* 과식 후 1시간은 배고픔 완전 차단, 이후 일반 감소 재개 */
+        bool overfed_block = d->is_overfed &&
+                             (now - d->overfeed_time < HOUR);
+
+        if (overfed_block) {
+            /* 차단 중: 타이머를 계속 갱신해 해제 직후 즉시 감소 방지 */
+            d->last_hungry_tick = now;
+        } else if (now - d->last_hungry_tick >= info->hungry_tick) {
             if (d->hungry > 0) {
                 d->hungry--;
                 if (d->hungry == 0)
@@ -301,8 +308,8 @@ void update_status(GameData* game) {
             d->last_hungry_tick = now;
         }
 
-        /* 과식 상태 해제 */
-        if (d->is_overfed && d->hungry < MAX_HUNGRY)
+        /* 과식 상태 해제: hungry <= 3이 되면 재과식 허용 */
+        if (d->is_overfed && d->hungry <= 3)
             d->is_overfed = false;
 
         /* 근력 감소 */
