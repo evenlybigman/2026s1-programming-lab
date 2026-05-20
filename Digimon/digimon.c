@@ -98,7 +98,7 @@ typedef struct {
     int max_overfeed;  // 허용 과식 횟수 최대치
 } EvoRule;
 
-static const EvoRule evo_rules[] = {
+static const EvoRule evo_rules[] = { //정확한 구현 필요
     //  from                  to                   care  effort  feed
     /* EGG → BABY1 (자동) */
     {  IDX_EGG1,             IDX_BOTAMON,           99,    0,    99 },
