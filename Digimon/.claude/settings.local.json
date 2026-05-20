@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:humulos.com)",
+      "WebFetch(domain:wikimon.net)",
+      "WebFetch(domain:withthewill.net)",
+      "WebFetch(domain:namu.wiki)",
+      "WebFetch(domain:m.dcinside.com)",
+      "WebFetch(domain:gall.dcinside.com)",
+      "PowerShell(\\(Get-Content \"C:\\\\WorkSpace\\\\2026_s1_04_prog_lab\\\\Digimon\\\\digimon.c\" -Encoding UTF8\\) -replace 'hungry_tick, strength_tick, poop_tick,', 'hungry_tick, strength_tick,' | Set-Content \"C:\\\\WorkSpace\\\\2026_s1_04_prog_lab\\\\Digimon\\\\digimon.c\" -Encoding UTF8)"
+    ]
+  }
+}
