@@ -25,14 +25,22 @@ int main(void) {
         now_ms = GetTickCount64();
         time_t now = time(NULL);
 
-        /* 키 입력 */
+        /* 키 입력: Z(이전) / X(다음) / C(확인) */
         if (_kbhit()) {
             int key = _getch();
             switch (key) {
-            case 'c':
+            case 'z': case 'Z':
+                menu_selected--;
+                if (menu_selected < 0) menu_selected = MENU_TOTAL_COUNT - 1;
+                drawMenu();
+                break;
+            case 'x': case 'X':
                 menu_selected++;
                 if (menu_selected == MENU_TOTAL_COUNT) menu_selected = 0;
                 drawMenu();
+                break;
+            case 'c': case 'C':
+                /* TODO: 메뉴 확인 동작 */
                 break;
             }
         }
@@ -42,9 +50,14 @@ int main(void) {
 
         /* 게임 수치 갱신: 1초마다 */
         if (now - last_status >= 1) {
+            Level prev_level = game.current.level;
             game_tick(&game);
+            if (game.current.level != prev_level)
+                anim_init(&anim, game.current.level, now_ms);
             last_status = now;
         }
+
+        Sleep(10); /* ~100fps 상한, 콘솔 과부하 방지 */
     }
 
     return 0;

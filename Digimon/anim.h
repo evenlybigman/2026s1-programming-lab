@@ -21,6 +21,9 @@ typedef enum {
     ANIM_DEAD,    // 사망
 } AnimKind;
 
+/* 이동 간격: 이 ms마다 한 칸 이동 */
+#define ANIM_MOVE_INTERVAL_MS 200
+
 /* =========================================================
  * 애니메이션 상태 구조체
  * ========================================================= */
@@ -31,7 +34,8 @@ typedef struct {
     ULONGLONG frame_interval_ms;  // 프레임 교체 간격 (ms)
     int       x, y;              // 케이지 내 픽셀 좌표
     int       dx;                 // 이동 방향: -1(좌), 0(정지), +1(우)
-    int       move_timer;         // 다음 행동 결정까지 남은 초
+    int       move_timer;         // 방향 전환까지 남은 스텝 수
+    ULONGLONG last_move_ms;       // 마지막 이동 시각 (ms)
     ULONGLONG remaining_ms;       // 현재 상태 지속 시간 (0 = 무한)
     ULONGLONG state_start_ms;     // 현재 상태 진입 시각 (ms)
 } AnimState;

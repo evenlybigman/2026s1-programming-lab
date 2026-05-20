@@ -65,6 +65,71 @@ int evolution_time[] = {
     48 * HOUR           // ULTIMATE -> MEGA     (48시간)
 };
 
+bool check_death(GameData *game) {
+    Digimon *d   = &game->current;
+    time_t   now = time(NULL);
+
+    if (d->hungry == 0 && now - d->hungry_zero_time >= HUNGRY_DEATH_TIMEOUT)
+        return true;
+    if (d->care_mistakes >= MAX_CARE_MISTAKES)
+        return true;
+    if (d->is_injuries && now - d->injury_time >= INJURY_DEATH_TIMEOUT)
+        return true;
+    return false;
+}
+
+void handle_death(GameData *game) {
+    init_digimon(game);
+}
+
+void check_evolution(GameData *game) {
+    Digimon *d   = &game->current;
+    time_t   now = time(NULL);
+
+    if (d->level >= MEGA) return;
+    if (d->is_sleep && d->level >= BABY2) return; // 낮잠 중 진화 정지 (유년기 이후)
+
+    if (now - d->level_start_time < evolution_time[d->level]) return;
+
+    /* EGG, BABY1 → 자동 진화 */
+    if (d->level == EGG) {
+        d->level      = BABY1;
+        d->table_idx  = 1; // 깜몬
+        strncpy_s(d->name, MAX_NAME_LEN, digimon_table[1].name, MAX_NAME_LEN - 1);
+        d->type       = digimon_table[1].type;
+        d->weight     = digimon_table[1].base_weight;
+        d->hungry     = MAX_HUNGRY;
+        d->strength   = MAX_STRENGTH;
+        d->max_dp     = max_dp_table[BABY1];
+        d->level_start_time = now;
+        return;
+    }
+    if (d->level == BABY1) {
+        d->level      = BABY2;
+        d->table_idx  = 2; // 코로몬
+        strncpy_s(d->name, MAX_NAME_LEN, digimon_table[2].name, MAX_NAME_LEN - 1);
+        d->type       = digimon_table[2].type;
+        d->weight     = digimon_table[2].base_weight;
+        d->max_dp     = max_dp_table[BABY2];
+        d->level_start_time = now;
+        return;
+    }
+
+    /* BABY2 이상 → 조건부 진화 (데모: 시간만 체크) */
+    // TODO: care_mistakes / effort / overfeed 조건 추가
+    int next_idx = d->table_idx + 1;
+    if (next_idx >= (int)(sizeof(digimon_table) / sizeof(digimon_table[0]))) return;
+    if (digimon_table[next_idx].level != d->level + 1) return;
+
+    d->level     = digimon_table[next_idx].level;
+    d->table_idx = next_idx;
+    strncpy_s(d->name, MAX_NAME_LEN, digimon_table[next_idx].name, MAX_NAME_LEN - 1);
+    d->type      = digimon_table[next_idx].type;
+    d->weight    = digimon_table[next_idx].base_weight;
+    d->max_dp    = max_dp_table[d->level];
+    d->level_start_time = now;
+}
+
 bool check_call(GameData *game) {
     Digimon *d   = &game->current;
     time_t   now = time(NULL);
@@ -140,6 +205,8 @@ void init_digimon(GameData* game) {
     game->last_update = now;
     game->is_call     = false;
     game->call_time   = now;
+
+    d->level_start_time = now;
 
     struct tm t = *localtime(&now);
     t.tm_hour = t.tm_min = t.tm_sec = 0;

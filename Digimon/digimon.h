@@ -111,6 +111,7 @@ typedef struct {
     time_t last_hungry_tick;    // 마지막 배고픔 감소 시각
     time_t last_strength_tick;  // 마지막 근력 감소 시각
     time_t last_midnight;       // 마지막으로 나이가 증가한 자정 시각
+    time_t level_start_time;    // 현재 레벨 진입 시각 (진화 타이머 기준)
 } Digimon;
 
 /**

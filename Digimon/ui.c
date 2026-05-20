@@ -120,16 +120,19 @@ void drawMenu() {
         else
             printf("  %s  ", menu_top[i]);
 
-        /* 하단 행 */
-        gotoxy(x, CAGE_START_Y + CAGE_H + 2);
-        if (i + MENU_TOP_COUNT == menu_selected)
-            printf("[ %s ]", menu_bot[i]);
-        else
-            printf("  %s  ", menu_bot[i]);
+        /* 하단 행 (항목이 있을 때만) */
+        int bot_len = 0;
+        if (i < MENU_BOT_COUNT) {
+            gotoxy(x, CAGE_START_Y + CAGE_H + 2);
+            if (i + MENU_TOP_COUNT == menu_selected)
+                printf("[ %s ]", menu_bot[i]);
+            else
+                printf("  %s  ", menu_bot[i]);
+            bot_len = (int)strlen(menu_bot[i]);
+        }
 
         /* 다음 항목 X 위치: 두 행 중 긴 쪽 길이 + 여백 */
         int top_len = (int)strlen(menu_top[i]);
-        int bot_len = (int)strlen(menu_bot[i]);
         x += (top_len > bot_len ? top_len : bot_len) + MENU_ITEM_PADDING;
     }
 }
