@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Digimon.vcxproj" Id="3bcc4b92-c9d1-4673-aac0-c4939ae0d647" />
+</Solution>
