@@ -2,6 +2,7 @@
 #define UI_H
 
 #include <windows.h>
+#include <stdbool.h>
 #include "sprites.h" // SPRITE_W, SPRITE_H 는 sprites.h 에서 단일 정의
 
 /* =========================================================
@@ -86,8 +87,9 @@ void drawBackground(int startX, int startY);
  * PIXEL_BG(1) 픽셀은 건너뛰고(투명), 나머지 픽셀은
  * colorMap[] 에서 색상을 조회해 그린다.
  * colorMap 범위를 초과하는 픽셀 값은 무시한다(OOB 방어).
+ * @flip: true 면 좌우 반전해서 그린다.
  */
-void drawSprite(int (*sprite)[SPRITE_W], int startX, int startY);
+void drawSprite(int (*sprite)[SPRITE_W], int startX, int startY, bool flip);
 
 /**
  * clearMenuLines - 메뉴가 표시되는 두 줄을 공백으로 지운다.

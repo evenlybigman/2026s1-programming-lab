@@ -82,52 +82,111 @@ void handle_death(GameData *game) {
     init_digimon(game);
 }
 
+/* =========================================================
+ * EvoRule - 진화 규칙 한 항목
+ *   evo_rules[]를 조건이 까다로운 순(높은 품질 → 낮은 품질)으로
+ *   정렬해두면 check_evolution()이 위에서부터 순회하며
+ *   조건을 충족하는 첫 번째 규칙을 적용한다.
+ *   폴백(마지막 항목)은 max_mistakes=99, min_effort=0, max_overfeed=99
+ *   로 설정해 항상 통과하도록 한다.
+ * ========================================================= */
+typedef struct {
+    int from_idx;      // 진화 전 digimon_table 인덱스 (DigimonIdx 사용)
+    int to_idx;        // 진화 후 digimon_table 인덱스
+    int max_mistakes;  // 허용 케어미스 최대치
+    int min_effort;    // 최소 노력치
+    int max_overfeed;  // 허용 과식 횟수 최대치
+} EvoRule;
+
+static const EvoRule evo_rules[] = {
+    //  from                  to                   care  effort  over
+    /* EGG → BABY1 (자동) */
+    {  IDX_EGG1,             IDX_BOTAMON,           99,    0,    99 },
+    /* BABY1 → BABY2 (자동) */
+    {  IDX_BOTAMON,          IDX_KOROMON,           99,    0,    99 },
+    /* BABY2 → ROOKIE */
+    {  IDX_KOROMON,          IDX_AGUMON,             3,    2,     3 },
+    {  IDX_KOROMON,          IDX_BETAMON,           99,    0,    99 }, // 폴백
+    /* ROOKIE → CHAMPION */
+    {  IDX_AGUMON,           IDX_GREYMON,            3,    5,     3 },
+    {  IDX_AGUMON,           IDX_AIRDRAMON,          5,    3,     5 },
+    {  IDX_AGUMON,           IDX_TYRANNOMON,        99,    0,    99 }, // 폴백
+    {  IDX_BETAMON,          IDX_DEVIMON,            3,    5,     3 },
+    {  IDX_BETAMON,          IDX_SEADRAMON,          5,    3,     5 },
+    {  IDX_BETAMON,          IDX_WORMMON,           99,    0,    99 }, // 폴백
+    /* CHAMPION → ULTIMATE */
+    {  IDX_GREYMON,          IDX_METALGREYMON,       3,    8,     3 },
+    {  IDX_GREYMON,          IDX_PUPPETMON,         99,    0,    99 }, // 폴백
+    {  IDX_DEVIMON,          IDX_METALGREYMON,       3,    8,     3 },
+    {  IDX_DEVIMON,          IDX_SUKAMON,           99,    0,    99 }, // 폴백
+    {  IDX_AIRDRAMON,        IDX_SUKAMON,            3,    8,     3 },
+    {  IDX_AIRDRAMON,        IDX_PUPPETMON,         99,    0,    99 }, // 폴백
+    {  IDX_TYRANNOMON,       IDX_SUKAMON,            3,    8,     3 },
+    {  IDX_TYRANNOMON,       IDX_PUPPETMON,         99,    0,    99 }, // 폴백
+    {  IDX_MERAMON,          IDX_SUKAMON,            3,    8,     3 },
+    {  IDX_MERAMON,          IDX_PUPPETMON,         99,    0,    99 }, // 폴백
+    {  IDX_SEADRAMON,        IDX_SUKAMON,            3,    8,     3 },
+    {  IDX_SEADRAMON,        IDX_PUPPETMON,         99,    0,    99 }, // 폴백
+    {  IDX_WORMMON,          IDX_SUKAMON,            3,    8,     3 },
+    {  IDX_WORMMON,          IDX_PUPPETMON,         99,    0,    99 }, // 폴백
+    /* ULTIMATE → MEGA */
+    {  IDX_METALGREYMON,     IDX_OMEGAMON,           1,   12,     1 },
+    {  IDX_METALGREYMON,     IDX_BLITZGREYMON,       3,    8,     3 },
+    {  IDX_METALGREYMON,     IDX_BANCHOUKOMON,      99,    0,    99 }, // 폴백
+    {  IDX_SUKAMON,          IDX_BANCHOUKOMON,       3,    8,     3 },
+    {  IDX_SUKAMON,          IDX_OMEGAMON,          99,    0,    99 }, // 폴백
+    {  IDX_PUPPETMON,        IDX_BLITZGREYMON,       3,    8,     3 },
+    {  IDX_PUPPETMON,        IDX_OMEGAMON,          99,    0,    99 }, // 폴백
+};
+#define EVO_RULES_SIZE ((int)(sizeof(evo_rules) / sizeof(evo_rules[0])))
+
+/* =========================================================
+ * do_evolve - 진화 공통 처리
+ *   레벨/테이블/이름/타입/체중/DP/수치를 일괄 갱신한다.
+ *   check_evolution()에서만 호출한다.
+ * ========================================================= */
+static void do_evolve(GameData *game, int next_idx) {
+    Digimon *d      = &game->current;
+    d->level        = digimon_table[next_idx].level;
+    d->table_idx    = next_idx;
+    strncpy_s(d->name, MAX_NAME_LEN, digimon_table[next_idx].name, MAX_NAME_LEN - 1);
+    d->type         = digimon_table[next_idx].type;
+    d->weight       = digimon_table[next_idx].base_weight;
+    d->max_dp       = max_dp_table[d->level];
+    d->hungry       = MAX_HUNGRY;
+    d->strength     = MAX_STRENGTH;
+    d->level_start_time = time(NULL);
+}
+
+void evolve_to(GameData *game, int next_idx) {
+    do_evolve(game, next_idx);
+}
+
 void check_evolution(GameData *game) {
     Digimon *d   = &game->current;
     time_t   now = time(NULL);
 
-    if (d->level >= MEGA) return;
-    if (d->is_sleep && d->level >= BABY2) return; // 낮잠 중 진화 정지 (유년기 이후)
-
+    if (d->level >= MEGA)            return;
+    if (game->hatch_target_idx >= 0) return; // 부화 애니메이션 대기 중
+    if (d->is_sleep && d->level >= BABY2) return;
     if (now - d->level_start_time < evolution_time[d->level]) return;
 
-    /* EGG, BABY1 → 자동 진화 */
-    if (d->level == EGG) {
-        d->level      = BABY1;
-        d->table_idx  = 1; // 깜몬
-        strncpy_s(d->name, MAX_NAME_LEN, digimon_table[1].name, MAX_NAME_LEN - 1);
-        d->type       = digimon_table[1].type;
-        d->weight     = digimon_table[1].base_weight;
-        d->hungry     = MAX_HUNGRY;
-        d->strength   = MAX_STRENGTH;
-        d->max_dp     = max_dp_table[BABY1];
-        d->level_start_time = now;
+    /* 규칙 테이블 순회: 조건을 충족하는 첫 번째 규칙 적용 */
+    for (int i = 0; i < EVO_RULES_SIZE; i++) {
+        const EvoRule *r = &evo_rules[i];
+        if (r->from_idx      != d->table_idx)   continue;
+        if (d->care_mistakes  > r->max_mistakes) continue;
+        if (d->effort         < r->min_effort)   continue;
+        if (d->overfeed       > r->max_overfeed) continue;
+
+        if (d->level == EGG) {
+            /* EGG: 부화 애니메이션 예약, 실제 진화는 애니메이션 완료 후 */
+            game->hatch_target_idx = r->to_idx;
+        } else {
+            do_evolve(game, r->to_idx);
+        }
         return;
     }
-    if (d->level == BABY1) {
-        d->level      = BABY2;
-        d->table_idx  = 2; // 코로몬
-        strncpy_s(d->name, MAX_NAME_LEN, digimon_table[2].name, MAX_NAME_LEN - 1);
-        d->type       = digimon_table[2].type;
-        d->weight     = digimon_table[2].base_weight;
-        d->max_dp     = max_dp_table[BABY2];
-        d->level_start_time = now;
-        return;
-    }
-
-    /* BABY2 이상 → 조건부 진화 (데모: 시간만 체크) */
-    // TODO: care_mistakes / effort / overfeed 조건 추가
-    int next_idx = d->table_idx + 1;
-    if (next_idx >= (int)(sizeof(digimon_table) / sizeof(digimon_table[0]))) return;
-    if (digimon_table[next_idx].level != d->level + 1) return;
-
-    d->level     = digimon_table[next_idx].level;
-    d->table_idx = next_idx;
-    strncpy_s(d->name, MAX_NAME_LEN, digimon_table[next_idx].name, MAX_NAME_LEN - 1);
-    d->type      = digimon_table[next_idx].type;
-    d->weight    = digimon_table[next_idx].base_weight;
-    d->max_dp    = max_dp_table[d->level];
-    d->level_start_time = now;
 }
 
 bool check_call(GameData *game) {
@@ -202,9 +261,10 @@ void init_digimon(GameData* game) {
     d->injury_time        = now;
     d->last_hungry_tick   = now;
     d->last_strength_tick = now;
-    game->last_update = now;
-    game->is_call     = false;
-    game->call_time   = now;
+    game->last_update      = now;
+    game->is_call          = false;
+    game->call_time        = now;
+    game->hatch_target_idx = -1;
 
     d->level_start_time = now;
 

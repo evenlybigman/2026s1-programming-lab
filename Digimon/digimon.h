@@ -61,6 +61,33 @@ typedef enum {
     FREE    = 3  // 프리 (유년기 전용)
 } DigimonType;
 
+/**
+ * digimon_table 인덱스 상수.
+ * 하드코딩 방지 및 evo_rules 테이블 가독성을 위해 사용.
+ * 새 디지몬 추가 시 이 열거형과 digimon_table을 동시에 수정한다.
+ */
+typedef enum {
+    IDX_EGG1         = 0,
+    IDX_BOTAMON      = 1,  // 깜몬
+    IDX_KOROMON      = 2,  // 코로몬
+    IDX_AGUMON       = 3,  // 아구몬
+    IDX_BETAMON      = 4,  // 베타몬
+    IDX_GREYMON      = 5,  // 그레이몬
+    IDX_DEVIMON      = 6,  // 데블몬
+    IDX_AIRDRAMON    = 7,  // 에어드라몬
+    IDX_TYRANNOMON   = 8,  // 티라노몬
+    IDX_MERAMON      = 9,  // 메라몬
+    IDX_SEADRAMON    = 10, // 시드라몬
+    IDX_WORMMON      = 11, // 워매몬
+    IDX_METALGREYMON = 12, // 메탈그레이몬
+    IDX_SUKAMON      = 13, // 콩알몬
+    IDX_PUPPETMON    = 14, // 퍼펫몬
+    IDX_BLITZGREYMON = 15, // 블리츠그레이몬
+    IDX_BANCHOUKOMON = 16, // 반초콩알몬
+    IDX_OMEGAMON     = 17, // 오메가몬
+    DIGIMON_TABLE_SIZE = 18
+} DigimonIdx;
+
 /* =========================================================
  * 구조체
  * ========================================================= */
@@ -94,6 +121,8 @@ typedef struct {
     int  care_mistakes; // 케어미스 횟수 (2 이하=규칙적, 3 이상=불규칙, MAX_CARE_MISTAKES=사망)
     int  dp;            // 현재 DP (0이면 전투 불가)
     int  max_dp;        // 최대 DP (진화 단계별 상이)
+    int  effort;        // 노력치 (훈련 4회마다 +1)
+    int  battles;       // 배틀 누적 횟수
 
     /* --- 숨김 정보 --- */
     int  sleep;         // 누적 수면 시간(초), SLEEP_FULL_RECOVERY 도달 시 DP 완전 회복
@@ -101,8 +130,6 @@ typedef struct {
     bool is_overfed;    // 현재 과식 상태 (hungry <= 3 되면 해제, 해제 전까지 배고픔 감소 속도 저하)
     int  injuries;      // 누적 부상 횟수
     bool is_injuries;   // 현재 부상 상태 여부
-    int  effort;        // 노력치 (훈련 4회마다 +1)
-    int  battles;       // 배틀 누적 횟수
     bool is_old;        // 진화 시기 놓침 여부
 
     time_t injury_time;         // 가장 최근 부상 발생 시각
@@ -138,9 +165,10 @@ typedef struct {
 typedef struct {
     Tamer   tamer;
     Digimon current;
-    time_t  last_update; // 마지막으로 update_status()가 호출된 시각
-    bool    is_call;     // 현재 콜 발생 여부
-    time_t  call_time;   // 콜 발생 시각 (10분 초과 시 케어미스)
+    time_t  last_update;       // 마지막으로 update_status()가 호출된 시각
+    bool    is_call;           // 현재 콜 발생 여부
+    time_t  call_time;         // 콜 발생 시각 (10분 초과 시 케어미스)
+    int     hatch_target_idx;  // 부화 예약 대상 table_idx (-1 = 없음)
 } GameData;
 
 /**
@@ -234,6 +262,15 @@ void check_evolution(GameData *game);
  * @return: 사망이 발생하면 true
  */
 bool game_tick(GameData *game);
+
+/**
+ * evolve_to - 지정한 table_idx 디지몬으로 즉시 진화한다.
+ * @game:     게임 상태 포인터
+ * @next_idx: 진화 대상 digimon_table 인덱스 (DigimonIdx 사용)
+ *
+ * 부화 애니메이션 완료 후 main.c에서 호출한다.
+ */
+void evolve_to(GameData *game, int next_idx);
 
 /**
  * init_digimon - 새 디지몬을 EGG 상태로 초기화한다.

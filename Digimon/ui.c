@@ -73,10 +73,11 @@ void drawBackground(int startX, int startY) {
     }
 }
 
-void drawSprite(int (*sprite)[SPRITE_W], int startX, int startY) {
+void drawSprite(int (*sprite)[SPRITE_W], int startX, int startY, bool flip) {
     for (int y = 0; y < SPRITE_H; y++) {
         for (int x = 0; x < SPRITE_W; x++) {
-            int pixel = sprite[y][x];
+            int sx    = flip ? (SPRITE_W - 1 - x) : x;
+            int pixel = sprite[y][sx];
 
             /* PIXEL_BG(1)는 투명 처리 — 건너뜀 */
             if (pixel == PIXEL_BG) continue;
