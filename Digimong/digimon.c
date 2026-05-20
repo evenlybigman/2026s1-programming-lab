@@ -32,13 +32,7 @@ int evolution_time[] = {
     172800 // 완전체 -> 궁극체 (48시간)
 };
 
-bool check_death(GameData *game) {
-    if (game->current.care_mistakes >= 20 || )
-}
-
-bool check_death(GameData *game) { // 사망 조건 체크 → 1 or 0
-    
-}
+bool check_death(GameData *game);      // 사망 조건 체크
 void handle_death(GameData *game);     // 사망 처리
 bool check_call(GameData *game);       // 콜 체크
 void update_status(GameData *game);    // 매 틱 수치 변화
