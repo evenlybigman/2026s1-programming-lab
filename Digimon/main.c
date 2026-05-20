@@ -80,9 +80,7 @@ int main(void) {
             }
             last_status = now;
         }
-
         Sleep(10); /* ~100fps 상한, 콘솔 과부하 방지 */
     }
-
     return 0;
 }

@@ -109,4 +109,5 @@ void clearMenuLines(int startTopY, int startBotY);
 void drawMenu();
 // 스프라이트 지우기 
 void clearSprite(int startX, int startY);
+
 #endif /* UI_H */

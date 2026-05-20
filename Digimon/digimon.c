@@ -99,7 +99,7 @@ typedef struct {
 } EvoRule;
 
 static const EvoRule evo_rules[] = {
-    //  from                  to                   care  effort  over
+    //  from                  to                   care  effort  feed
     /* EGG → BABY1 (자동) */
     {  IDX_EGG1,             IDX_BOTAMON,           99,    0,    99 },
     /* BABY1 → BABY2 (자동) */
@@ -138,6 +138,7 @@ static const EvoRule evo_rules[] = {
     {  IDX_PUPPETMON,        IDX_BLITZGREYMON,       3,    8,     3 },
     {  IDX_PUPPETMON,        IDX_OMEGAMON,          99,    0,    99 }, // 폴백
 };
+
 #define EVO_RULES_SIZE ((int)(sizeof(evo_rules) / sizeof(evo_rules[0])))
 
 /* =========================================================

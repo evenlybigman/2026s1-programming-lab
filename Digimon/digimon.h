@@ -63,7 +63,6 @@ typedef enum {
 
 /**
  * digimon_table 인덱스 상수.
- * 하드코딩 방지 및 evo_rules 테이블 가독성을 위해 사용.
  * 새 디지몬 추가 시 이 열거형과 digimon_table을 동시에 수정한다.
  */
 typedef enum {
@@ -96,11 +95,11 @@ typedef enum {
  * 현재 활성 디지몬의 모든 상태를 담는 구조체.
  *
  * [표시 항목]
- *   age, weight, hungry, strength, poop, care_mistakes, dp, max_dp
+ *   age, weight, hungry, strength, poop, care_mistakes, dp, max_dp, effort, battles
  *
  * [숨김 항목]
  *   overfeed, sleep, is_sleep, injuries, is_injuries,
- *   effort, battles, is_old, 각종 time_t 타임스탬프
+ *   is_old, 각종 time_t 타임스탬프
  */
 typedef struct {
     char        name[MAX_NAME_LEN]; // 디지몬 이름
