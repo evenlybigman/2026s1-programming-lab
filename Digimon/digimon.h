@@ -135,9 +135,11 @@ typedef struct {
  * 게임 전체 상태. 저장/불러오기 단위.
  */
 typedef struct {
-    Tamer  tamer;
+    Tamer   tamer;
     Digimon current;
     time_t  last_update; // 마지막으로 update_status()가 호출된 시각
+    bool    is_call;     // 현재 콜 발생 여부
+    time_t  call_time;   // 콜 발생 시각 (10분 초과 시 케어미스)
 } GameData;
 
 /**

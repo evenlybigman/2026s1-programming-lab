@@ -24,7 +24,7 @@
  * 메뉴 레이아웃 상수
  * ========================================================= */
 #define MENU_TOP_COUNT      5    // 상단 메뉴 항목 수
-#define MENU_BOT_COUNT      5    // 하단 메뉴 항목 수
+#define MENU_BOT_COUNT      4    // 하단 메뉴 항목 수
 #define MENU_TOTAL_COUNT    (MENU_TOP_COUNT + MENU_BOT_COUNT)
 #define MENU_ITEM_PADDING   7    // 항목 사이 여백 (문자 단위)
 #define MENU_LINE_CLEAR_LEN 100  // 메뉴 줄 지우기용 공백 수

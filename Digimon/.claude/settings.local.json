@@ -8,7 +8,12 @@
       "WebFetch(domain:namu.wiki)",
       "WebFetch(domain:m.dcinside.com)",
       "WebFetch(domain:gall.dcinside.com)",
-      "PowerShell(\\(Get-Content \"C:\\\\WorkSpace\\\\2026_s1_04_prog_lab\\\\Digimon\\\\digimon.c\" -Encoding UTF8\\) -replace 'hungry_tick, strength_tick, poop_tick,', 'hungry_tick, strength_tick,' | Set-Content \"C:\\\\WorkSpace\\\\2026_s1_04_prog_lab\\\\Digimon\\\\digimon.c\" -Encoding UTF8)"
+      "PowerShell(\\(Get-Content \"C:\\\\WorkSpace\\\\2026_s1_04_prog_lab\\\\Digimon\\\\digimon.c\" -Encoding UTF8\\) -replace 'hungry_tick, strength_tick, poop_tick,', 'hungry_tick, strength_tick,' | Set-Content \"C:\\\\WorkSpace\\\\2026_s1_04_prog_lab\\\\Digimon\\\\digimon.c\" -Encoding UTF8)",
+      "Skill(anthropic-skills:pdf)",
+      "Skill(anthropic-skills:pdf:*)",
+      "Read(//c/Users/evenl/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/523e4eca-1b0c-4d2b-bca8-4eaad5362e88/f8179d1b-e688-4210-b426-7fd738e719b0/skills/pdf/**)",
+      "Bash(python -c ' *)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

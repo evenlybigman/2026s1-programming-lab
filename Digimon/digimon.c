@@ -65,8 +65,33 @@ int evolution_time[] = {
     48 * HOUR           // ULTIMATE -> MEGA     (48시간)
 };
 
+bool check_call(GameData *game) {
+    Digimon *d   = &game->current;
+    time_t   now = time(NULL);
+
+    bool need_call = d->hungry    <= 1
+                  || d->strength  <= 1
+                  || d->is_injuries;
+
+    if (need_call && !game->is_call) {
+        game->is_call  = true;
+        game->call_time = now;
+    } else if (!need_call && game->is_call) {
+        game->is_call = false;
+    }
+
+    /* 콜 발생 후 10분 무응답 → 케어미스 */
+    if (game->is_call && now - game->call_time >= 10 * MINUTE) {
+        d->care_mistakes++;
+        game->call_time = now;  // 타이머 리셋 (중복 방지)
+    }
+
+    return game->is_call;
+}
+
 bool game_tick(GameData *game) {
     update_status(game);
+    check_call(game);
     check_evolution(game);
     if (check_death(game)) {
         handle_death(game);
@@ -112,7 +137,9 @@ void init_digimon(GameData* game) {
     d->injury_time        = now;
     d->last_hungry_tick   = now;
     d->last_strength_tick = now;
-    game->last_update     = now;
+    game->last_update = now;
+    game->is_call     = false;
+    game->call_time   = now;
 
     struct tm t = *localtime(&now);
     t.tm_hour = t.tm_min = t.tm_sec = 0;
