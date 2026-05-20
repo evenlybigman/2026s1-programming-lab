@@ -132,6 +132,7 @@ typedef struct {
     bool is_injuries;   // 현재 부상 상태 여부
     bool is_old;        // 진화 시기 놓침 여부
 
+    time_t overfeed_time;        // 가장 최근 과식 발생 시각 (1시간 배고픔 차단 기준)
     time_t injury_time;         // 가장 최근 부상 발생 시각
     time_t hungry_zero_time;    // 배고픔이 0이 된 시각
     time_t strength_zero_time;  // 근력이 0이 된 시각
