@@ -73,10 +73,13 @@ void drawPixel(int x, int y, int color);
 
 /**
  * drawBackground - 케이지 전체를 BG_COLOR 로 채운다.
- * @startX: 케이지 왼쪽 상단 픽셀 X
- * @startY: 케이지 왼쪽 상단 픽셀 Y
  */
-void drawBackground(int startX, int startY);
+void drawBackground();
+
+/**
+ * draw - 배경 스프라이트를 받아 그린다.
+ */
+void draw(int (*sprite)[SPRITE_W]);
 
 /**
  * drawSprite - 스프라이트를 지정 위치에 그린다.
@@ -107,7 +110,31 @@ void clearMenuLines(int startTopY, int startBotY);
  * menu_selected 와 일치하는 항목에 [ ] 강조를 표시한다.
  */
 void drawMenu();
-// 스프라이트 지우기 
+// 스프라이트 지우기
 void clearSprite(int startX, int startY);
+
+/**
+ * drawBgSprite - CAGE_H × CAGE_W 크기 배경 스프라이트를 그린다.
+ * @sprite: CAGE_H × CAGE_W 정수 배열 포인터 (background_name_1 등)
+ * @startX: 픽셀 X, @startY: 픽셀 Y
+ */
+void drawBgSprite(int (*sprite)[CAGE_W], int startX, int startY);
+
+/**
+ * drawFont - 8×8 픽셀 폰트 문자 하나를 그린다.
+ * @c:      대문자 알파벳 ('A'~'Z')
+ * @startX: 왼쪽 상단 픽셀 X
+ * @startY: 왼쪽 상단 픽셀 Y
+ *
+ * 범위 밖 문자(A~Z 이외)는 무시한다.
+ */
+void drawFont(char c, int startX, int startY);
+
+/**
+ * clearFont - 8×8 픽셀 영역을 BG_COLOR 로 지운다.
+ * @startX: 왼쪽 상단 픽셀 X
+ * @startY: 왼쪽 상단 픽셀 Y
+ */
+void clearFont(int startX, int startY);
 
 #endif /* UI_H */

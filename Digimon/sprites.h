@@ -10,6 +10,10 @@
 #define SPRITE_W 16
 #define SPRITE_H 16
 
+/* 픽셀 폰트 크기 */
+#define FONT_W   8
+#define FONT_H   8
+
 /* =========================================================
  * 스프라이트 픽셀 값 의미
  *   PIXEL_BG  (1) : 배경색 → drawSprite()에서 건너뜀
@@ -32,12 +36,24 @@ extern int colorMap[COLORMAP_SIZE];
 
 /* =========================================================
  * 스프라이트 데이터 선언
+ *   새 스프라이트를 추가할 때:
+ *     1) sprites.c 에 int newBackground[SPRITE_H][SPRITE_W] = { … }; 추가
+ *     2) 아래에 extern 선언 추가
+ *     3) background_table[]
+ * ========================================================= */
+extern int sprite_blank[SPRITE_H][SPRITE_W]; // 이름 정하는 배경
+
+/* =========================================================
+ * 스프라이트 데이터 선언
  * 1, 2 = 기본 / 3 : 기분좋음 / 4 : 공격 / 5 : 화남 / 6 : 슬픔 / 피격 / 아픔 /7 : 잠 
  *   새 스프라이트를 추가할 때:
  *     1) sprites.c 에 int newSprite[SPRITE_H][SPRITE_W] = { … }; 추가
  *     2) 아래에 extern 선언 추가
  *     3) digimon_table[] 의 해당 항목에 포인터 연결 (digimon.h 참고)
  * ========================================================= */
+
+extern int background_name_1  [16][32];
+
 extern int sprite_blank       [SPRITE_H][SPRITE_W]; // 빈(모두 배경) 스프라이트
 extern int sprite_egg_1       [SPRITE_H][SPRITE_W]; // 알 애니메이션 프레임 1
 extern int sprite_egg_2		  [SPRITE_H][SPRITE_W]; // 알 애니메이션 프레임 2
@@ -50,6 +66,16 @@ extern int sprite_botamon_5   [SPRITE_H][SPRITE_W]; // 먹기 1
 extern int sprite_botamon_6   [SPRITE_H][SPRITE_W]; // 먹기 2 
 extern int sprite_botamon_7   [SPRITE_H][SPRITE_W]; // 슬픔, 아픔 
 extern int sprite_botamon_8   [SPRITE_H][SPRITE_W]; // 잠 
-extern int sprite_agumon_1      [SPRITE_H][SPRITE_W]; // 아구몬
+extern int sprite_agumon_1    [SPRITE_H][SPRITE_W]; // 아구몬
+
+/* =========================================================
+ * 픽셀 폰트 / UI 아이콘
+ *   font_alpha[26][FONT_H][FONT_W] : A~Z 8×8 픽셀 폰트
+ *   font_heart[FONT_H][FONT_W]     : 하트 (꽉 참) — 배고픔/근력 표시용
+ *   font_heart_empty[FONT_H][FONT_W]: 하트 (빈)
+ * ========================================================= */
+extern int font_alpha      [26][FONT_H][FONT_W];
+extern int font_heart          [FONT_H][FONT_W];
+extern int font_heart_empty    [FONT_H][FONT_W];
 
 #endif /* SPRITES_H */

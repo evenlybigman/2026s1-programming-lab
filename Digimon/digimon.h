@@ -157,6 +157,7 @@ typedef struct {
     char       name[MAX_NAME_LEN];    // 테이머 이름
     int        battles;               // 총 배틀 전적
     DigimonDex dex[MAX_DEX_SIZE];     // 디지몬 도감
+    bool is_digimon;
 } Tamer;
 
 /**
@@ -198,6 +199,14 @@ extern int        evolution_time[]; // 각 단계 진화 소요 시간(초) (인
 /* =========================================================
  * 함수 선언
  * ========================================================= */
+
+/**
+* 게임 최소 실행시 실행
+* digimon이 false면 호출
+* 테이머 이름 입력받기
+* 알 받기
+*/
+void new_game(GameData* game);
 
 /**
  * check_death - 사망 조건을 검사한다.

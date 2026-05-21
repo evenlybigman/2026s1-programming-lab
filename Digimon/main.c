@@ -1,6 +1,7 @@
 ﻿#include "digimon.h"
 #include "ui.h"
 #include "anim.h"
+#include "event.h"
 #include <stdio.h>
 #include <conio.h>
 #include <stdlib.h>
@@ -10,8 +11,11 @@ int main(void) {
     ui_init();
 
     GameData game;
-    init_digimon(&game);
 
+    /* 게임 시작: 이름 입력 → 알 선택 → init_digimon */
+    newGame(&game);
+
+    /* 게임 화면 초기 출력 */
     drawBackground(CAGE_START_X, CAGE_START_Y);
     drawMenu();
 
@@ -19,7 +23,7 @@ int main(void) {
     AnimState anim;
     anim_init(&anim, game.current.level, now_ms);
 
-    time_t last_status     = time(NULL);
+    time_t last_status        = time(NULL);
     bool   hatch_anim_started = false;
 
     while (1) {
@@ -45,7 +49,7 @@ int main(void) {
                 break;
 #ifdef _DEBUG
             case 't': case 'T':
-                /* 디버그: 진화 타이머를 즉시 만료시킴 */
+                /* 디버그: 진화 타이머 즉시 만료 */
                 game.current.level_start_time -= evolution_time[game.current.level];
                 break;
 #endif
@@ -53,19 +57,7 @@ int main(void) {
         }
 
         /* 부화 애니메이션 처리 */
-        if (game.hatch_target_idx >= 0) {
-            if (!hatch_anim_started) {
-                /* 첫 감지: 부화 애니메이션 시작 (흔들림 3초 + egg_3 1초) */
-                anim_play(&anim, ANIM_HATCH, 4000, now_ms);
-                hatch_anim_started = true;
-            } else if (anim.kind != ANIM_HATCH) {
-                /* 애니메이션 완료: 실제 진화 실행 */
-                evolve_to(&game, game.hatch_target_idx);
-                game.hatch_target_idx = -1;
-                hatch_anim_started    = false;
-                anim_init(&anim, game.current.level, now_ms);
-            }
-        }
+        hatch(&game, &anim, &hatch_anim_started, now_ms);
 
         /* 애니메이션 갱신 */
         anim_update(&anim, now_ms, game.current.level);
@@ -75,12 +67,14 @@ int main(void) {
         if (now - last_status >= 1) {
             bool died = game_tick(&game);
             if (died) {
-                hatch_anim_started    = false;
+                hatch_anim_started = false;
                 anim_init(&anim, game.current.level, now_ms);
             }
             last_status = now;
         }
-        Sleep(10); /* ~100fps 상한, 콘솔 과부하 방지 */
+
+        Sleep(10); /* ~100fps 상한 */
     }
+
     return 0;
 }
