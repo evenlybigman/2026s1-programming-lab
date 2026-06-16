@@ -3,7 +3,8 @@
 
 #include <windows.h>
 #include <stdbool.h>
-#include "sprites.h" // SPRITE_W, SPRITE_H 는 sprites.h 에서 단일 정의
+#include "sprites.h"  // SPRITE_W, SPRITE_H 는 sprites.h 에서 단일 정의
+#include "digimon.h"  // Digimon 구조체 (draw_status 인자)
 
 /* =========================================================
  * 콘솔 레이아웃 상수
@@ -22,9 +23,18 @@
 #define BG_COLOR        7    // 케이지 배경: 밝은 회색
 
 /* =========================================================
+ * 상태창 레이아웃 상수
+ *   케이지 픽셀 오른쪽 끝 = (CAGE_START_X + CAGE_W) * 2 = 74 (문자 열)
+ *   상태창은 74 + 2 = 76 열부터, 케이지 상단과 같은 높이에서 시작
+ * ========================================================= */
+#define STATUS_X        ((CAGE_START_X + CAGE_W) * 2 + 2)  // 케이지 오른쪽 2칸 여백
+#define STATUS_Y        (CAGE_START_Y)                      // 케이지 상단과 동일 높이
+#define STATUS_LINES    (CAGE_H)                            // 케이지 높이만큼 사용
+
+/* =========================================================
  * 메뉴 레이아웃 상수
  * ========================================================= */
-#define MENU_TOP_COUNT      5    // 상단 메뉴 항목 수
+#define MENU_TOP_COUNT      4    // 상단 메뉴 항목 수
 #define MENU_BOT_COUNT      4    // 하단 메뉴 항목 수
 #define MENU_TOTAL_COUNT    (MENU_TOP_COUNT + MENU_BOT_COUNT)
 #define MENU_ITEM_PADDING   7    // 항목 사이 여백 (문자 단위)
@@ -107,7 +117,22 @@ void clearMenuLines(int startTopY, int startBotY);
  * menu_selected 와 일치하는 항목에 [ ] 강조를 표시한다.
  */
 void drawMenu();
-// 스프라이트 지우기 
+// 스프라이트 지우기
 void clearSprite(int startX, int startY);
+
+/**
+ * draw_status - 상태창을 케이지 오른쪽에 항상 출력한다.
+ * @d: 현재 디지몬 상태 포인터
+ *
+ * 배고픔·근력을 ■□ 막대로, 나머지 수치를 텍스트로 표시한다.
+ * 매 초 호출해 수치를 갱신한다.
+ */
+void draw_status(const Digimon *d);
+
+/**
+ * draw_call_alert - 호출 알림을 상태창 마지막 줄에 표시/지운다.
+ * @is_call: true이면 "디지몬의 호출!!" 출력, false이면 지움
+ */
+void draw_call_alert(bool is_call);
 
 #endif /* UI_H */

@@ -68,6 +68,10 @@ void anim_play(AnimState *anim, AnimKind kind, ULONGLONG duration_ms, ULONGLONG 
     anim->remaining_ms   = duration_ms;
     anim->state_start_ms = now_ms;
     anim->last_frame_ms  = now_ms;
+
+    /* 진화 깜빡임은 빠른 프레임 간격 사용 */
+    if (kind == ANIM_EVOLVE)
+        anim->frame_interval_ms = 120;
 }
 
 /* =========================================================
@@ -80,6 +84,7 @@ void anim_update(AnimState *anim, ULONGLONG now_ms, Level level) {
     if (anim->remaining_ms > 0 &&
         now_ms - anim->state_start_ms >= anim->remaining_ms) {
         bool was_hatch       = (anim->kind == ANIM_HATCH);
+        bool was_evolve      = (anim->kind == ANIM_EVOLVE);
         clearSprite(anim->draw_x, anim->draw_y);
         anim->draw_x         = anim->x;
         anim->draw_y         = anim->y;
@@ -89,7 +94,7 @@ void anim_update(AnimState *anim, ULONGLONG now_ms, Level level) {
         anim->frame          = 0;
         anim->last_rand_ms   = now_ms;  // 복귀 직후 랜덤 행동 즉시 재발생 방지
         anim->stop_pose_end_ms = 0;
-        if (was_hatch) return; /* main.c가 다음 루프에서 감지해 evolve_to() 호출 */
+        if (was_hatch || was_evolve) return; /* main.c가 다음 루프에서 감지해 evolve_to() 호출 */
         needs_redraw = true;
     }
 
@@ -194,7 +199,14 @@ void anim_update(AnimState *anim, ULONGLONG now_ms, Level level) {
         clearSprite(anim->draw_x, anim->draw_y);
         anim->draw_x = anim->x;
         anim->draw_y = anim->y;
-        drawSprite(get_sprite(anim->kind, anim->frame, level), anim->draw_x, anim->draw_y, anim->flip);
+        if (anim->kind == ANIM_EVOLVE) {
+            /* 진화 깜빡임: frame=0 → 스프라이트 표시, frame=1 → 숨김 */
+            if (anim->frame == 0)
+                drawSprite(get_sprite(ANIM_WALK, 0, level), anim->draw_x, anim->draw_y, anim->flip);
+            /* frame=1: clearSprite만으로 충분 */
+        } else {
+            drawSprite(get_sprite(anim->kind, anim->frame, level), anim->draw_x, anim->draw_y, anim->flip);
+        }
     }
 }
 

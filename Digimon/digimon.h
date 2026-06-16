@@ -121,7 +121,9 @@ typedef struct {
     int  dp;            // 현재 DP (0이면 전투 불가)
     int  max_dp;        // 최대 DP (진화 단계별 상이)
     int  effort;        // 노력치 (훈련 4회마다 +1)
+    int  train_count;   // 훈련 누적 횟수 (4회마다 effort +1)
     int  battles;       // 배틀 누적 횟수
+    int  wins;          // 배틀 승리 횟수 (배틀 시스템 구현 후 진화 조건에 사용)
 
     /* --- 숨김 정보 --- */
     int  sleep;         // 누적 수면 시간(초), SLEEP_FULL_RECOVERY 도달 시 DP 완전 회복
@@ -194,6 +196,7 @@ typedef struct {
 extern int        max_dp_table[];   // 진화 단계별 최대 DP (인덱스 = Level)
 extern DigimonInfo digimon_table[]; // 디지몬 기본 스탯 테이블
 extern int        evolution_time[]; // 각 단계 진화 소요 시간(초) (인덱스 = 현재 Level)
+extern const char *level_names[];   // 진화 단계 이름 (인덱스 = Level)
 
 /* =========================================================
  * 함수 선언
@@ -241,9 +244,24 @@ void update_status(GameData *game);
  * apply_offline_time - 프로그램 종료 후 재시작 시 경과 시간을 일괄 반영한다.
  * @game: 게임 상태 포인터
  *
- * last_update와 현재 시각의 차이만큼 update_status()를 압축 적용한다.
+ * last_update와 현재 시각의 차이만큼 배고픔·근력·나이·부상을 압축 적용한다.
+ * load_game() 직후 한 번만 호출한다.
  */
 void apply_offline_time(GameData *game);
+
+/**
+ * save_game - 현재 게임 상태를 파일에 저장한다.
+ * @game: 게임 상태 포인터 (읽기 전용)
+ * @return: 저장 성공 시 true
+ */
+bool save_game(const GameData *game);
+
+/**
+ * load_game - 저장 파일에서 게임 상태를 불러온다.
+ * @game: 불러온 데이터를 채울 포인터
+ * @return: 성공 시 true, 파일 없음·버전 불일치 시 false
+ */
+bool load_game(GameData *game);
 
 /**
  * check_evolution - 진화 조건을 검사하고 조건 충족 시 진화시킨다.
@@ -280,5 +298,43 @@ void evolve_to(GameData *game, int next_idx);
  * 시간 관련 필드는 time(NULL)로 초기화한다.
  */
 void init_digimon(GameData *game);
+
+/* =========================================================
+ * 플레이어 액션 함수
+ * ========================================================= */
+
+/**
+ * action_feed - 먹이를 준다.
+ *   hungry < MAX_HUNGRY: hungry +1, weight +1
+ *   hungry == MAX_HUNGRY: 과식 (overfeed +1, is_overfed = true)
+ *   알 상태 또는 수면 중에는 무시된다.
+ */
+void action_feed(GameData *game);
+
+/**
+ * action_train - 훈련시킨다.
+ *   성장기(ROOKIE) 미만, 수면 중, DP=0이면 무시된다.
+ *   dp -1, strength +1 (최대 MAX_STRENGTH), weight -1 (최저 base_weight)
+ *   train_count 4회마다 effort +1
+ */
+void action_train(GameData *game);
+
+/**
+ * action_clean - 똥을 치운다.
+ *   poop > 0이면 poop -1
+ */
+void action_clean(GameData *game);
+
+/**
+ * action_cure - 부상을 치료한다.
+ *   is_injuries가 true이면 false로 해제, injuries 누적 카운트 +1
+ */
+void action_cure(GameData *game);
+
+/**
+ * action_sleep_toggle - 수면 상태를 토글한다.
+ *   알 상태에서는 무시된다.
+ */
+void action_sleep_toggle(GameData *game);
 
 #endif /* DIGIMON_H */

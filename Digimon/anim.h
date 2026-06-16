@@ -1,4 +1,4 @@
-#ifndef ANIM_H
+﻿#ifndef ANIM_H
 #define ANIM_H
 
 #include <windows.h>
@@ -13,12 +13,13 @@
 typedef enum {
     ANIM_EGG,     // 알 (프레임 1↔2, 이동 없음)
     ANIM_WALK,    // 기본 이동
-    ANIM_HATCH,   // 부화 모션 (EGG 전용, WALK보다 높아 방해받지 않음)
+    ANIM_HATCH,   // 부화 모션 (EGG 전용)
     ANIM_HAPPY,   // 기쁨
     ANIM_EAT,     // 먹기
     ANIM_SLEEP,   // 수면
     ANIM_INJURY,  // 부상
     ANIM_ATTACK,  // 공격
+    ANIM_EVOLVE,  // 진화 깜빡임 (비-EGG 전용, 완료 후 main.c가 evolve_to 호출)
     ANIM_DEAD,    // 사망
 } AnimKind;
 
