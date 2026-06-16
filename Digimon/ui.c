@@ -65,10 +65,21 @@ void drawPixel(int x, int y, int color) {
     printf("  ");
 }
 
-void drawBackground(int startX, int startY) {
+void drawBackground() {
     for (int y = 0; y < CAGE_H; y++) {
         for (int x = 0; x < CAGE_W; x++) {
-            drawPixel(startX + x, startY + y, BG_COLOR);
+            drawPixel(CAGE_START_X + x, CAGE_START_Y + y, BG_COLOR);
+        }
+    }
+}
+
+void draw(int (*background)[CAGE_W]) {
+    for (int y = 0; y < CAGE_H; y++) {
+        for (int x = 0; x < CAGE_W; x++) {
+            int pixel = background[y][x]; //배경 스프라이트 받아오기
+
+            if (pixel == PIXEL_BG) continue;
+            drawPixel(CAGE_START_X + x, CAGE_START_Y + y, colorMap[pixel]);
         }
     }
 }
@@ -138,6 +149,39 @@ void drawMenu() {
     }
 }
 
+<<<<<<< HEAD
+=======
+void drawBgSprite(int (*sprite)[CAGE_W], int startX, int startY) {
+    for (int y = 0; y < CAGE_H; y++) {
+        for (int x = 0; x < CAGE_W; x++) {
+            int pixel = sprite[y][x];
+            if (pixel == PIXEL_BG) continue;
+            if (pixel < 0 || pixel >= COLORMAP_SIZE) continue;
+            drawPixel(startX + x, startY + y, colorMap[pixel]);
+        }
+    }
+}
+
+void drawFont(char c, int startX, int startY) {
+    int idx = c - 'A';
+    if (idx < 0 || idx > 25) return;
+    for (int y = 0; y < FONT_H; y++) {
+        for (int x = 0; x < FONT_W; x++) {
+            int pixel = font_alpha[idx][y][x];
+            if (pixel == PIXEL_BG) continue;
+            if (pixel < 0 || pixel >= COLORMAP_SIZE) continue;
+            drawPixel(startX + x, startY + y, colorMap[pixel]);
+        }
+    }
+}
+
+void clearFont(int startX, int startY) {
+    for (int y = 0; y < FONT_H; y++)
+        for (int x = 0; x < FONT_W; x++)
+            drawPixel(startX + x, startY + y, BG_COLOR);
+}
+
+>>>>>>> d05f306ab6d5a88498c1550bc095858f089a8999
 // 디지몬 스프라이트 지우기
 void clearSprite(int startX, int startY) {
     for (int y = 0; y < SPRITE_H; y++) {

@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="anim.c" />
     <ClCompile Include="digimon.c" />
+    <ClCompile Include="event.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="sprites.c" />
     <ClCompile Include="ui.c" />
@@ -148,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="anim.h" />
     <ClInclude Include="digimon.h" />
+    <ClInclude Include="event.h" />
     <ClInclude Include="sprites.h" />
     <ClInclude Include="ui.h" />
   </ItemGroup>

@@ -1,6 +1,7 @@
 ﻿#include "digimon.h"
 #include "ui.h"
 #include "anim.h"
+#include "event.h"
 #include <stdio.h>
 #include <conio.h>
 #include <stdlib.h>
@@ -10,12 +11,19 @@ int main(void) {
     ui_init();
 
     GameData game;
+<<<<<<< HEAD
     if (!load_game(&game)) {
         init_digimon(&game);
     } else {
         apply_offline_time(&game);
     }
+=======
+>>>>>>> d05f306ab6d5a88498c1550bc095858f089a8999
 
+    /* 게임 시작: 이름 입력 → 알 선택 → init_digimon */
+    newGame(&game);
+
+    /* 게임 화면 초기 출력 */
     drawBackground(CAGE_START_X, CAGE_START_Y);
     drawMenu();
     draw_status(&game.current);
@@ -25,6 +33,7 @@ int main(void) {
     AnimState anim;
     anim_init(&anim, game.current.level, now_ms);
 
+<<<<<<< HEAD
     time_t    last_status        = time(NULL);
     time_t    last_save          = time(NULL);
     bool      hatch_anim_started = false;
@@ -33,6 +42,10 @@ int main(void) {
     ULONGLONG last_blink_ms  = 0;
     bool      blink_on       = true;
     bool      prev_is_call   = false;
+=======
+    time_t last_status        = time(NULL);
+    bool   hatch_anim_started = false;
+>>>>>>> d05f306ab6d5a88498c1550bc095858f089a8999
 
     while (1) {
         now_ms = GetTickCount64();
@@ -85,13 +98,14 @@ int main(void) {
                 break;
 #ifdef _DEBUG
             case 't': case 'T':
-                /* 디버그: 진화 타이머를 즉시 만료시킴 */
+                /* 디버그: 진화 타이머 즉시 만료 */
                 game.current.level_start_time -= evolution_time[game.current.level];
                 break;
 #endif
             }
         }
 
+<<<<<<< HEAD
         /* 진화 애니메이션 처리 */
         if (game.hatch_target_idx >= 0) {
             if (game.current.level == EGG) {
@@ -120,6 +134,10 @@ int main(void) {
                 }
             }
         }
+=======
+        /* 부화 애니메이션 처리 */
+        hatch(&game, &anim, &hatch_anim_started, now_ms);
+>>>>>>> d05f306ab6d5a88498c1550bc095858f089a8999
 
         /* 애니메이션 갱신 */
         anim_update(&anim, now_ms, game.current.level);
@@ -137,6 +155,7 @@ int main(void) {
             draw_status(&game.current);
         }
 
+<<<<<<< HEAD
         /* 자동 저장: 60초마다 */
         if (now - last_save >= 60) {
             save_game(&game);
@@ -158,6 +177,10 @@ int main(void) {
         }
         prev_is_call = game.is_call;
         Sleep(10); /* ~100fps 상한*/
+=======
+        Sleep(10); /* ~100fps 상한 */
+>>>>>>> d05f306ab6d5a88498c1550bc095858f089a8999
     }
+
     return 0;
 }

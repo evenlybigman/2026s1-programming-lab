@@ -75,10 +75,13 @@ bool check_death(GameData *game) {
     Digimon *d   = &game->current;
     time_t   now = time(NULL);
 
+    //배고픔 0 지속
     if (d->hungry == 0 && now - d->hungry_zero_time >= HUNGRY_DEATH_TIMEOUT)
         return true;
+    //케어미스 20 누적
     if (d->care_mistakes >= MAX_CARE_MISTAKES)
         return true;
+    //부상 방치
     if (d->is_injuries && now - d->injury_time >= INJURY_DEATH_TIMEOUT)
         return true;
     return false;
@@ -282,6 +285,8 @@ bool game_tick(GameData *game) {
 }
 
 void init_digimon(GameData* game) {
+    //디지몬 추가
+    game->tamer.is_digimon = true;
     Digimon* d = &game->current;
 
     // digimon_table[0] = 디지에그
@@ -293,8 +298,8 @@ void init_digimon(GameData* game) {
     // 수치 초기화
     d->age = 0;
     d->weight = 0;
-    d->hungry = MAX_HUNGRY;
-    d->strength = MAX_STRENGTH;
+    d->hungry = 0;
+    d->strength = 0;
     d->poop = 0;
     d->care_mistakes = 0;
     d->dp = 0;
@@ -322,7 +327,7 @@ void init_digimon(GameData* game) {
     d->last_hungry_tick   = now;
     d->last_strength_tick = now;
     game->last_update      = now;
-    game->is_call          = false;
+    game->is_call          = true;
     game->call_time        = now;
     game->hatch_target_idx = -1;
 

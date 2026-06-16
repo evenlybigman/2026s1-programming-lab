@@ -15,7 +15,12 @@
       "Bash(python -c ' *)",
       "Bash(python3 -c ' *)",
       "Bash(msbuild Digimon.vcxproj /p:Configuration=Debug /p:Platform=x64 /nologo /v:minimal)",
-      "PowerShell(& \"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\18\\\\Insiders\\\\MSBuild\\\\Current\\\\Bin\\\\MSBuild.exe\" \"C:\\\\WorkSpace\\\\2026_s1_04_prog_lab\\\\Digimon\\\\Digimon.vcxproj\" /p:Configuration=Debug /p:Platform=x64 /nologo /v:minimal 2>&1)"
+      "PowerShell(& \"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\18\\\\Insiders\\\\MSBuild\\\\Current\\\\Bin\\\\MSBuild.exe\" \"C:\\\\WorkSpace\\\\2026_s1_04_prog_lab\\\\Digimon\\\\Digimon.vcxproj\" /p:Configuration=Debug /p:Platform=x64 /nologo /v:minimal 2>&1)",
+      "Bash(cl /W3 /nologo /Fe:digimon_test.exe main.c digimon.c anim.c ui.c sprites.c event.c)",
+      "Bash(ls *.sln)",
+      "Bash(ls *.vcxproj)",
+      "Bash(ls Makefile)",
+      "Bash(cmd /c \"\\\\\"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\MSBuild\\\\Current\\\\Bin\\\\MSBuild.exe\\\\\" Digimon.vcxproj /p:Configuration=Debug /p:Platform=x64 /nologo /v:minimal 2>&1\")"
     ]
   }
 }
