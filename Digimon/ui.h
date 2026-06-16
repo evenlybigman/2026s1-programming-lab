@@ -84,12 +84,7 @@ void drawPixel(int x, int y, int color);
 /**
  * drawBackground - 케이지 전체를 BG_COLOR 로 채운다.
  */
-void drawBackground();
-
-/**
- * draw - 배경 스프라이트를 받아 그린다.
- */
-void draw(int (*sprite)[SPRITE_W]);
+void drawBackground(void);
 
 /**
  * drawSprite - 스프라이트를 지정 위치에 그린다.
@@ -124,43 +119,30 @@ void drawMenu();
 void clearSprite(int startX, int startY);
 
 /**
-<<<<<<< HEAD
  * draw_status - 상태창을 케이지 오른쪽에 항상 출력한다.
  * @d: 현재 디지몬 상태 포인터
- *
- * 배고픔·근력을 ■□ 막대로, 나머지 수치를 텍스트로 표시한다.
- * 매 초 호출해 수치를 갱신한다.
  */
 void draw_status(const Digimon *d);
 
 /**
  * draw_call_alert - 호출 알림을 상태창 마지막 줄에 표시/지운다.
- * @is_call: true이면 "디지몬의 호출!!" 출력, false이면 지움
+ * @is_call: true이면 "호출!!" 출력, false이면 지움
  */
 void draw_call_alert(bool is_call);
-=======
+
+/**
  * drawBgSprite - CAGE_H × CAGE_W 크기 배경 스프라이트를 그린다.
- * @sprite: CAGE_H × CAGE_W 정수 배열 포인터 (background_name_1 등)
- * @startX: 픽셀 X, @startY: 픽셀 Y
  */
 void drawBgSprite(int (*sprite)[CAGE_W], int startX, int startY);
 
 /**
- * drawFont - 8×8 픽셀 폰트 문자 하나를 그린다.
- * @c:      대문자 알파벳 ('A'~'Z')
- * @startX: 왼쪽 상단 픽셀 X
- * @startY: 왼쪽 상단 픽셀 Y
- *
- * 범위 밖 문자(A~Z 이외)는 무시한다.
+ * drawFont - 8×8 픽셀 폰트 문자 하나를 그린다. ('A'~'Z')
  */
 void drawFont(char c, int startX, int startY);
 
 /**
  * clearFont - 8×8 픽셀 영역을 BG_COLOR 로 지운다.
- * @startX: 왼쪽 상단 픽셀 X
- * @startY: 왼쪽 상단 픽셀 Y
  */
 void clearFont(int startX, int startY);
->>>>>>> d05f306ab6d5a88498c1550bc095858f089a8999
 
 #endif /* UI_H */

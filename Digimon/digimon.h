@@ -204,14 +204,6 @@ extern const char *level_names[];   // 진화 단계 이름 (인덱스 = Level)
  * ========================================================= */
 
 /**
-* 게임 최소 실행시 실행
-* digimon이 false면 호출
-* 테이머 이름 입력받기
-* 알 받기
-*/
-void new_game(GameData* game);
-
-/**
  * check_death - 사망 조건을 검사한다.
  * @game: 게임 상태 포인터
  * @return: 사망 조건 충족 시 true
@@ -257,6 +249,15 @@ void update_status(GameData *game);
  * load_game() 직후 한 번만 호출한다.
  */
 void apply_offline_time(GameData *game);
+
+/* =========================================================
+ * 저장 파일 상수
+ *   GameData 구조체를 변경했다면 SAVE_VERSION을 반드시 올린다.
+ *   버전이 달라지면 load_game()이 false를 반환해 새 게임으로 시작된다.
+ * ========================================================= */
+#define SAVE_FILE    "digimon.sav"
+#define SAVE_MAGIC   0x44474D31u   /* 'D''G''M''1' */
+#define SAVE_VERSION 1u
 
 /**
  * save_game - 현재 게임 상태를 파일에 저장한다.

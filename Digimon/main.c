@@ -1,4 +1,4 @@
-﻿#include "digimon.h"
+#include "digimon.h"
 #include "ui.h"
 #include "anim.h"
 #include "event.h"
@@ -11,20 +11,15 @@ int main(void) {
     ui_init();
 
     GameData game;
-<<<<<<< HEAD
-    if (!load_game(&game)) {
-        init_digimon(&game);
+    /* 저장 파일이 있고 디지몬이 살아있으면 불러오기, 아니면 새 게임 */
+    if (!load_game(&game) || !game.tamer.is_digimon) {
+        newGame(&game);   // 이름 입력 + 알 선택 + init_digimon
     } else {
         apply_offline_time(&game);
     }
-=======
->>>>>>> d05f306ab6d5a88498c1550bc095858f089a8999
-
-    /* 게임 시작: 이름 입력 → 알 선택 → init_digimon */
-    newGame(&game);
 
     /* 게임 화면 초기 출력 */
-    drawBackground(CAGE_START_X, CAGE_START_Y);
+    drawBackground();
     drawMenu();
     draw_status(&game.current);
     draw_call_alert(game.is_call);
@@ -33,19 +28,14 @@ int main(void) {
     AnimState anim;
     anim_init(&anim, game.current.level, now_ms);
 
-<<<<<<< HEAD
     time_t    last_status        = time(NULL);
     time_t    last_save          = time(NULL);
     bool      hatch_anim_started = false;
 
-    /* 콜 깜빡임 */ 
-    ULONGLONG last_blink_ms  = 0;
-    bool      blink_on       = true;
-    bool      prev_is_call   = false;
-=======
-    time_t last_status        = time(NULL);
-    bool   hatch_anim_started = false;
->>>>>>> d05f306ab6d5a88498c1550bc095858f089a8999
+    /* 콜 깜빡임 */
+    ULONGLONG last_blink_ms = 0;
+    bool      blink_on      = true;
+    bool      prev_is_call  = false;
 
     while (1) {
         now_ms = GetTickCount64();
@@ -105,43 +95,12 @@ int main(void) {
             }
         }
 
-<<<<<<< HEAD
-        /* 진화 애니메이션 처리 */
-        if (game.hatch_target_idx >= 0) {
-            if (game.current.level == EGG) {
-                /* EGG: 부화 (흔들림 3초 + egg_3 1초) */
-                if (!hatch_anim_started) {
-                    anim_play(&anim, ANIM_HATCH, 4000, now_ms);
-                    hatch_anim_started = true;
-                } else if (anim.kind != ANIM_HATCH) {
-                    evolve_to(&game, game.hatch_target_idx);
-                    game.hatch_target_idx = -1;
-                    hatch_anim_started    = false;
-                    anim_init(&anim, game.current.level, now_ms);
-                    save_game(&game);   // 진화 완료 → 즉시 저장
-                }
-            } else {
-                /* 비-EGG: 진화 깜빡임 (1초) */
-                if (!hatch_anim_started) {
-                    anim_play(&anim, ANIM_EVOLVE, 1000, now_ms);
-                    hatch_anim_started = true;
-                } else if (anim.kind != ANIM_EVOLVE) {
-                    evolve_to(&game, game.hatch_target_idx);
-                    game.hatch_target_idx = -1;
-                    hatch_anim_started    = false;
-                    anim_init(&anim, game.current.level, now_ms);
-                    save_game(&game);   // 진화 완료 → 즉시 저장
-                }
-            }
-        }
-=======
-        /* 부화 애니메이션 처리 */
+        /* 부화/진화 애니메이션 처리 */
         hatch(&game, &anim, &hatch_anim_started, now_ms);
->>>>>>> d05f306ab6d5a88498c1550bc095858f089a8999
 
         /* 애니메이션 갱신 */
-        anim_update(&anim, now_ms, game.current.level);
-        anim_check_random(&anim, &game.current, now_ms, game.current.level);
+        anim_update(&anim, now_ms, &game.current);
+        anim_check_random(&anim, &game.current, now_ms);
 
         /* 게임 수치 갱신: 1초마다 */
         if (now - last_status >= 1) {
@@ -155,7 +114,6 @@ int main(void) {
             draw_status(&game.current);
         }
 
-<<<<<<< HEAD
         /* 자동 저장: 60초마다 */
         if (now - last_save >= 60) {
             save_game(&game);
@@ -176,11 +134,7 @@ int main(void) {
             last_blink_ms = 0;
         }
         prev_is_call = game.is_call;
-        Sleep(10); /* ~100fps 상한*/
-=======
         Sleep(10); /* ~100fps 상한 */
->>>>>>> d05f306ab6d5a88498c1550bc095858f089a8999
     }
-
     return 0;
 }

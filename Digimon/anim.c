@@ -7,7 +7,13 @@
  *   (level, kind, frame) → 스프라이트 포인터
  *   새 디지몬 추가 시 이 함수에 분기만 추가한다.
  * ========================================================= */
-static int (*get_sprite(AnimKind kind, int frame, Level level))[SPRITE_W] {
+/* get_sprite - (kind, frame, level, table_idx) → 스프라이트 포인터
+ *
+ * 새 디지몬 스프라이트 추가 방법:
+ *   default 블록의 switch (table_idx) 에 case 하나 추가하면 된다.
+ *   같은 레벨 내 여러 디지몬도 table_idx로 구분 가능.
+ */
+static int (*get_sprite(AnimKind kind, int frame, Level level, int table_idx))[SPRITE_W] {
     switch (level) {
     case EGG:
         if (kind == ANIM_HATCH)
@@ -28,6 +34,10 @@ static int (*get_sprite(AnimKind kind, int frame, Level level))[SPRITE_W] {
         }
 
     default:
+        /* TODO: table_idx 기반으로 각 디지몬 스프라이트 분기
+         *   switch (table_idx) { case IDX_AGUMON: ... } 형태로 추가
+         *   현재는 모든 BABY2 이상이 sprite_agumon_1 placeholder */
+        (void)table_idx;
         return sprite_agumon_1;
     }
 }
@@ -77,7 +87,9 @@ void anim_play(AnimState *anim, AnimKind kind, ULONGLONG duration_ms, ULONGLONG 
 /* =========================================================
  * anim_update
  * ========================================================= */
-void anim_update(AnimState *anim, ULONGLONG now_ms, Level level) {
+void anim_update(AnimState *anim, ULONGLONG now_ms, const Digimon *d) {
+    Level level     = d->level;
+    int   table_idx = d->table_idx;
     bool needs_redraw = false;
 
     /* 1. 상태 만료 */
@@ -121,7 +133,7 @@ void anim_update(AnimState *anim, ULONGLONG now_ms, Level level) {
             clearSprite(anim->draw_x, anim->draw_y);
             anim->frame  = new_frame;
             anim->draw_x = shake_x;
-            drawSprite(get_sprite(anim->kind, anim->frame, level), anim->draw_x, anim->draw_y, false);
+            drawSprite(get_sprite(anim->kind, anim->frame, level, table_idx), anim->draw_x, anim->draw_y, false);
         }
         return;
     }
@@ -202,10 +214,10 @@ void anim_update(AnimState *anim, ULONGLONG now_ms, Level level) {
         if (anim->kind == ANIM_EVOLVE) {
             /* 진화 깜빡임: frame=0 → 스프라이트 표시, frame=1 → 숨김 */
             if (anim->frame == 0)
-                drawSprite(get_sprite(ANIM_WALK, 0, level), anim->draw_x, anim->draw_y, anim->flip);
+                drawSprite(get_sprite(ANIM_WALK, 0, level, table_idx), anim->draw_x, anim->draw_y, anim->flip);
             /* frame=1: clearSprite만으로 충분 */
         } else {
-            drawSprite(get_sprite(anim->kind, anim->frame, level), anim->draw_x, anim->draw_y, anim->flip);
+            drawSprite(get_sprite(anim->kind, anim->frame, level, table_idx), anim->draw_x, anim->draw_y, anim->flip);
         }
     }
 }
@@ -213,7 +225,7 @@ void anim_update(AnimState *anim, ULONGLONG now_ms, Level level) {
 /* =========================================================
  * anim_check_random
  * ========================================================= */
-void anim_check_random(AnimState *anim, const Digimon *d, ULONGLONG now_ms, Level level) {
+void anim_check_random(AnimState *anim, const Digimon *d, ULONGLONG now_ms) {
     /* WALK 상태가 아니면 건너뜀 */
     if (anim->kind != ANIM_WALK) return;
 

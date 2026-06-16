@@ -84,21 +84,19 @@ void anim_play(AnimState *anim, AnimKind kind, ULONGLONG duration_ms, ULONGLONG 
  * anim_update - 매 루프마다 호출해 프레임/이동/그리기를 갱신한다.
  * @anim:   애니메이션 상태 포인터
  * @now_ms: 현재 시각 (GetTickCount64)
- * @level:  현재 디지몬 레벨 (스프라이트 선택에 사용)
+ * @d:      현재 디지몬 상태 (level·table_idx로 스프라이트 선택)
  */
-void anim_update(AnimState *anim, ULONGLONG now_ms, Level level);
+void anim_update(AnimState *anim, ULONGLONG now_ms, const Digimon *d);
 
 /**
  * anim_check_random - 게임 상태에 따라 랜덤 행동을 발생시킨다.
  *   ANIM_RAND_CHECK_MS마다 한 번 체크한다.
- *   - 정지 중(dx==0): STOP_POSE_CHANCE% 확률로 멈춤 특수 포즈(sprite_3)
- *   - 그 외: hungry·strength 높을수록 ANIM_HAPPY 확률 증가
+ *   hungry·strength 높을수록 ANIM_HAPPY 확률 증가.
  *   수면 중(is_sleep)이면 모든 랜덤 행동을 건너뛴다.
  * @anim:   애니메이션 상태 포인터
- * @d:      현재 디지몬 상태 (hungry, strength, is_sleep 참조)
+ * @d:      현재 디지몬 상태
  * @now_ms: 현재 시각 (GetTickCount64)
- * @level:  현재 디지몬 레벨 (스프라이트 선택에 사용)
  */
-void anim_check_random(AnimState *anim, const Digimon *d, ULONGLONG now_ms, Level level);
+void anim_check_random(AnimState *anim, const Digimon *d, ULONGLONG now_ms);
 
 #endif /* ANIM_H */

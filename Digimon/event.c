@@ -25,13 +25,8 @@ void newGame(GameData* game) {
     game->tamer.is_digimon = false;
     game->tamer.battles    = 0;
 
-    if (game->tamer.is_digimon) {
-        /* TODO: 저장 데이터 로드 */
-        return;
-    }
-
     /* ── 1단계: 이름 입력 ── */
-    drawBackground(CAGE_START_X, CAGE_START_Y);
+    drawBackground();
     drawBgSprite(background_name_1, CAGE_START_X, CAGE_START_Y);
 
     int count     = 0;   // 현재 알파벳 인덱스 (0=A ~ 25=Z)
@@ -80,7 +75,7 @@ void newGame(GameData* game) {
  * ========================================================= */
 void selectEgg(GameData* game) {
     /* ── 2단계: 알 선택 ── */
-    drawBackground(CAGE_START_X, CAGE_START_Y);
+    drawBackground();
     drawSprite(sprite_egg_1, CAGE_MID_X, CAGE_START_Y, false);
 
     while (1) {
@@ -105,14 +100,29 @@ void selectEgg(GameData* game) {
 void hatch(GameData* game, AnimState* anim, bool* hatch_anim_started, ULONGLONG now_ms) {
     if (game->hatch_target_idx < 0) return;
 
-    if (!*hatch_anim_started) {
-        anim_play(anim, ANIM_HATCH, 4000, now_ms);
-        *hatch_anim_started = true;
-    } else if (anim->kind != ANIM_HATCH) {
-        /* 애니메이션 종료 → 진화 확정 */
-        evolve_to(game, game->hatch_target_idx);
-        game->hatch_target_idx = -1;
-        *hatch_anim_started    = false;
-        anim_init(anim, game->current.level, now_ms);
+    if (game->current.level == EGG) {
+        /* EGG: 부화 흔들림 + 균열 (4초) */
+        if (!*hatch_anim_started) {
+            anim_play(anim, ANIM_HATCH, 4000, now_ms);
+            *hatch_anim_started = true;
+        } else if (anim->kind != ANIM_HATCH) {
+            evolve_to(game, game->hatch_target_idx);
+            game->hatch_target_idx = -1;
+            *hatch_anim_started    = false;
+            anim_init(anim, game->current.level, now_ms);
+            save_game(game);   // 부화 완료 → 즉시 저장
+        }
+    } else {
+        /* 비-EGG: 진화 깜빡임 (1초) */
+        if (!*hatch_anim_started) {
+            anim_play(anim, ANIM_EVOLVE, 1000, now_ms);
+            *hatch_anim_started = true;
+        } else if (anim->kind != ANIM_EVOLVE) {
+            evolve_to(game, game->hatch_target_idx);
+            game->hatch_target_idx = -1;
+            *hatch_anim_started    = false;
+            anim_init(anim, game->current.level, now_ms);
+            save_game(game);   // 진화 완료 → 즉시 저장
+        }
     }
 }

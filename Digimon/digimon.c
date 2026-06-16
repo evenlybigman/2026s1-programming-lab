@@ -392,6 +392,29 @@ void action_sleep_toggle(GameData *game) {
     d->is_sleep = !d->is_sleep;
 }
 
+/* crossed_hour - from~to 구간 안에 target_hour 정각이 포함되어 있으면 true.
+ *   update_status()의 1초 틱마다 취침/기상 시각 통과 여부를 판정한다. */
+static bool crossed_hour(time_t from, time_t to, int target_hour) {
+    struct tm t  = *localtime(&from);
+    t.tm_hour    = target_hour;
+    t.tm_min     = 0;
+    t.tm_sec     = 0;
+    time_t candidate = mktime(&t);
+    if (candidate <= from) candidate += DAY;  // 이미 지난 경우 다음 날로
+    return candidate <= to;
+}
+
+/* next_hour_after - base 이후 처음 맞는 target_hour 시각을 반환한다. */
+static time_t next_hour_after(time_t base, int target_hour) {
+    struct tm t = *localtime(&base);
+    t.tm_hour   = target_hour;
+    t.tm_min    = 0;
+    t.tm_sec    = 0;
+    time_t candidate = mktime(&t);
+    if (candidate <= base) candidate += DAY;
+    return candidate;
+}
+
 /* =========================================================
  * apply_offline_time
  *   종료 후 재시작 시 last_update ~ 현재까지 경과 시간을
@@ -407,6 +430,19 @@ void apply_offline_time(GameData *game) {
     if (now <= from || d->level == EGG) {
         game->last_update = now;
         return;
+    }
+
+    /* ── 오프라인 중 자동 기상 ──────────────────────────────────
+     *   수면 중 종료 → 기상 시각(wake_hour)이 오프라인 구간 안에
+     *   있었으면 자동 기상하고, 배고픔·근력 타이머를 기상 시각으로
+     *   앞당긴다. 이후 hunger/strength 블록이 기상~now 구간을 계산. */
+    if (d->is_sleep) {
+        time_t wake_at = next_hour_after(from, info->wake_hour);
+        if (wake_at < now) {
+            d->is_sleep           = false;
+            d->last_hungry_tick   = wake_at;
+            d->last_strength_tick = wake_at;
+        }
     }
 
     /* ── 배고픔 / 똥 ─────────────────────────────────── */
@@ -459,11 +495,8 @@ void apply_offline_time(GameData *game) {
  * 저장 / 불러오기
  *   파일 포맷: [magic 4B][version 4B][GameData]
  *   버전 불일치 시 load_game()은 false 반환 → 새 게임 시작.
+ *   SAVE_FILE / SAVE_MAGIC / SAVE_VERSION 은 digimon.h 에 정의.
  * ========================================================= */
-#define SAVE_FILE    "digimon.sav"
-#define SAVE_MAGIC   0x44474D31u   /* 'D''G''M''1' */
-#define SAVE_VERSION 1u
-
 bool save_game(const GameData *game) {
     FILE *fp;
     if (fopen_s(&fp, SAVE_FILE, "wb") != 0) return false;
@@ -498,6 +531,21 @@ void update_status(GameData* game) {
     if (today_midnight > d->last_midnight) {
         if (d->age < MAX_AGE) d->age++;
         d->last_midnight = today_midnight;
+    }
+
+    /* ── 자동 취침 / 기상 ───────────────────────────────────────
+     *   sleep_hour 통과: 플레이어가 이미 재웠으면 케어미스 없음
+     *   wake_hour  통과: 강제 기상
+     *   hungry_tick==0(EGG)은 수면 스케줄 없음 → 자동 제외      */
+    if (info->hungry_tick > 0) {
+        time_t prev = game->last_update;
+        if (crossed_hour(prev, now, info->sleep_hour)) {
+            if (!d->is_sleep) d->care_mistakes++;
+            d->is_sleep = true;
+        }
+        if (crossed_hour(prev, now, info->wake_hour)) {
+            d->is_sleep = false;
+        }
     }
 
     /* 수면 중에는 배고픔/근력/똥 변화 없음 */
