@@ -35,4 +35,11 @@ void selectEgg(GameData* game);
  */
 void hatch(GameData* game, AnimState* anim, bool* hatch_anim_started, ULONGLONG now_ms);
 
+/**
+ * battle_event - 배틀 이벤트 처리.
+ *   전제조건 미충족(루키 미만, DP 없음, 수면 중) 시 즉시 반환.
+ *   CPU 상대를 생성하고 배틀을 실행한 뒤 결과를 표시한다.
+ */
+void battle_event(GameData* game, AnimState* anim);
+
 #endif /* EVENT_H */

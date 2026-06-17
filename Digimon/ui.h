@@ -6,6 +6,11 @@
 #include "sprites.h"  // SPRITE_W, SPRITE_H 는 sprites.h 에서 단일 정의
 #include "digimon.h"  // Digimon 구조체 (draw_status 인자)
 
+/* MinGW 6.x 헤더에 누락된 선언 */
+#ifndef GetTickCount64
+ULONGLONG WINAPI GetTickCount64(VOID);
+#endif
+
 /* =========================================================
  * 콘솔 레이아웃 상수
  * ========================================================= */
@@ -34,8 +39,8 @@
 /* =========================================================
  * 메뉴 레이아웃 상수
  * ========================================================= */
-#define MENU_TOP_COUNT      4    // 상단 메뉴 항목 수
-#define MENU_BOT_COUNT      4    // 하단 메뉴 항목 수
+#define MENU_TOP_COUNT      5    // 상단 메뉴 항목 수
+#define MENU_BOT_COUNT      3    // 하단 메뉴 항목 수
 #define MENU_TOTAL_COUNT    (MENU_TOP_COUNT + MENU_BOT_COUNT)
 #define MENU_ITEM_PADDING   7    // 항목 사이 여백 (문자 단위)
 #define MENU_LINE_CLEAR_LEN 100  // 메뉴 줄 지우기용 공백 수
@@ -131,6 +136,18 @@ void draw_status(const Digimon *d);
 void draw_call_alert(bool is_call);
 
 /**
+ * drawUiSprite - 8×8 UI 아이콘 스프라이트를 그린다.
+ */
+void drawUiSprite(int (*sprite)[UI_SPRITE_W], int startX, int startY);
+
+/**
+ * draw_cage_ui - 케이지 안에 UI 아이콘을 그린다.
+ *   똥(poop), 수면(zzz), 부상(medicine) 아이콘.
+ *   anim_update() 호출 직후 매 루프마다 호출한다.
+ */
+void draw_cage_ui(const Digimon *d);
+
+/**
  * drawBgSprite - CAGE_H × CAGE_W 크기 배경 스프라이트를 그린다.
  */
 void drawBgSprite(int (*sprite)[CAGE_W], int startX, int startY);
@@ -144,5 +161,26 @@ void drawFont(char c, int startX, int startY);
  * clearFont - 8×8 픽셀 영역을 BG_COLOR 로 지운다.
  */
 void clearFont(int startX, int startY);
+
+/**
+ * drawDigit - 4×7 픽셀 숫자 하나를 그린다. (0~9)
+ */
+void drawDigit(int digit, int startX, int startY);
+
+/**
+ * show_status_screen - 상태 정보를 케이지 안에 픽셀로 표시한다.
+ *   9페이지: 0=이름/스프라이트(자동스크롤), 1=배고픔, 2=근력,
+ *            3=나이, 4=체중, 5=DP, 6=똥, 7=케어미스, 8=노력치
+ *   Z/X: 페이지 이동, C: 닫기
+ */
+void show_status_screen(const Digimon *d);
+
+/**
+ * flush_cage - 케이지 버퍼를 콘솔에 한 번에 출력한다.
+ *   drawPixel / drawSprite / drawBackground 등은 내부 CHAR_INFO 버퍼에만 쓰고,
+ *   이 함수를 호출해야 실제 화면에 반영된다.
+ *   메인 루프에서 매 프레임 1회 호출한다.
+ */
+void flush_cage(void);
 
 #endif /* UI_H */

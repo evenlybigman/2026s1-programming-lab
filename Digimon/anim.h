@@ -64,6 +64,13 @@ typedef struct {
  * ========================================================= */
 
 /**
+ * anim_get_walk_sprite - 주어진 디지몬의 walk frame 0 스프라이트를 반환한다.
+ * @level:     현재 진화 단계
+ * @table_idx: digimon_table 인덱스
+ */
+int (*anim_get_walk_sprite(Level level, int table_idx))[SPRITE_W];
+
+/**
  * anim_init - AnimState를 초기값으로 설정한다.
  * @anim:   애니메이션 상태 포인터
  * @level:  현재 디지몬 레벨 (EGG이면 ANIM_EGG, 나머지면 ANIM_WALK로 시작)

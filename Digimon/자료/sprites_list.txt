@@ -1,0 +1,182 @@
+# Digital Monster Ver.20th 스프라이트 추출 배치 파일
+# 형식: 이름  x  y  너비  높이
+# 추출 실행: node extract_sprites.js 148724.png --batch sprites_list.txt > extracted_sprites.c
+#
+# 그리드 구조:
+#   U-Pet 섹션: x_start=94, 행 y=44+row*20, 셀 step=20
+#   Pendulus 섹션: x_start=504, 행 y=44+row*20 (U-Pet와 동일 y)
+#   New Digimon 섹션: x_start=504, 행 y=424+row*20
+#   각 셀: 16x16 pixels
+#
+# 프레임 매핑 (col 0~7):
+#   _1=walk1  _2=walk2  _3=stop  _4=happy  _5=attack  _6=eat1  _7=eat2  _8=injury
+
+# ── BOTAMON (BABY1) — U-Pet row 0, y=44 ──
+botamon_1  94  44  16  16
+botamon_2  114  44  16  16
+botamon_3  134  44  16  16
+botamon_4  154  44  16  16
+botamon_5  174  44  16  16
+botamon_6  194  44  16  16
+botamon_7  214  44  16  16
+botamon_8  234  44  16  16
+
+# ── KOROMON (BABY2) — U-Pet row 1, y=64 ──
+koromon_1  94  64  16  16
+koromon_2  114  64  16  16
+koromon_3  134  64  16  16
+koromon_4  154  64  16  16
+koromon_5  174  64  16  16
+koromon_6  194  64  16  16
+koromon_7  214  64  16  16
+koromon_8  234  64  16  16
+
+# ── AGUMON (ROOKIE) — U-Pet row 2, y=84 ──
+agumon_1  94  84  16  16
+agumon_2  114  84  16  16
+agumon_3  134  84  16  16
+agumon_4  154  84  16  16
+agumon_5  174  84  16  16
+agumon_6  194  84  16  16
+agumon_7  214  84  16  16
+agumon_8  234  84  16  16
+
+# ── BETAMON (ROOKIE) — U-Pet row 3, y=104 ──
+betamon_1  94  104  16  16
+betamon_2  114  104  16  16
+betamon_3  134  104  16  16
+betamon_4  154  104  16  16
+betamon_5  174  104  16  16
+betamon_6  194  104  16  16
+betamon_7  214  104  16  16
+betamon_8  234  104  16  16
+
+# ── GREYMON (CHAMPION) — U-Pet row 4, y=124 ──
+greymon_1  94  124  16  16
+greymon_2  114  124  16  16
+greymon_3  134  124  16  16
+greymon_4  154  124  16  16
+greymon_5  174  124  16  16
+greymon_6  194  124  16  16
+greymon_7  214  124  16  16
+greymon_8  234  124  16  16
+
+# ── TYRANNOMON (CHAMPION) — U-Pet row 5, y=144 ──
+tyrannomon_1  94  144  16  16
+tyrannomon_2  114  144  16  16
+tyrannomon_3  134  144  16  16
+tyrannomon_4  154  144  16  16
+tyrannomon_5  174  144  16  16
+tyrannomon_6  194  144  16  16
+tyrannomon_7  214  144  16  16
+tyrannomon_8  234  144  16  16
+
+# ── DEVIMON (CHAMPION) — U-Pet row 6, y=164 ──
+devimon_1  94  164  16  16
+devimon_2  114  164  16  16
+devimon_3  134  164  16  16
+devimon_4  154  164  16  16
+devimon_5  174  164  16  16
+devimon_6  194  164  16  16
+devimon_7  214  164  16  16
+devimon_8  234  164  16  16
+
+# ── MERAMON (CHAMPION) — U-Pet row 7, y=184 ──
+meramon_1  94  184  16  16
+meramon_2  114  184  16  16
+meramon_3  134  184  16  16
+meramon_4  154  184  16  16
+meramon_5  174  184  16  16
+meramon_6  194  184  16  16
+meramon_7  214  184  16  16
+meramon_8  234  184  16  16
+
+# ── AIRDRAMON (CHAMPION) — U-Pet row 8, y=204 ──
+airdramon_1  94  204  16  16
+airdramon_2  114  204  16  16
+airdramon_3  134  204  16  16
+airdramon_4  154  204  16  16
+airdramon_5  174  204  16  16
+airdramon_6  194  204  16  16
+airdramon_7  214  204  16  16
+airdramon_8  234  204  16  16
+
+# ── SEADRAMON (CHAMPION) — U-Pet row 9, y=224 ──
+seadramon_1  94  224  16  16
+seadramon_2  114  224  16  16
+seadramon_3  134  224  16  16
+seadramon_4  154  224  16  16
+seadramon_5  174  224  16  16
+seadramon_6  194  224  16  16
+seadramon_7  214  224  16  16
+seadramon_8  234  224  16  16
+
+# ── WORMMON (CHAMPION, fallback) — U-Pet Numemon row 10, y=244 ──
+wormmon_1  94  244  16  16
+wormmon_2  114  244  16  16
+wormmon_3  134  244  16  16
+wormmon_4  154  244  16  16
+wormmon_5  174  244  16  16
+wormmon_6  194  244  16  16
+wormmon_7  214  244  16  16
+wormmon_8  234  244  16  16
+
+# ── METALGREYMON (ULTIMATE) — U-Pet row 11, y=264 ──
+metalgreymon_1  94  264  16  16
+metalgreymon_2  114  264  16  16
+metalgreymon_3  134  264  16  16
+metalgreymon_4  154  264  16  16
+metalgreymon_5  174  264  16  16
+metalgreymon_6  194  264  16  16
+metalgreymon_7  214  264  16  16
+metalgreymon_8  234  264  16  16
+
+# ── SUKAMON / 콩알몬 = Mamemon (ULTIMATE) — U-Pet row 12, y=284 ──
+sukamon_1  94  284  16  16
+sukamon_2  114  284  16  16
+sukamon_3  134  284  16  16
+sukamon_4  154  284  16  16
+sukamon_5  174  284  16  16
+sukamon_6  194  284  16  16
+sukamon_7  214  284  16  16
+sukamon_8  234  284  16  16
+
+# ── PUPPETMON = Pinochimon (ULTIMATE) — Pendulus row 5, y=144, x_start=504 ──
+puppetmon_1  504  144  16  16
+puppetmon_2  524  144  16  16
+puppetmon_3  544  144  16  16
+puppetmon_4  564  144  16  16
+puppetmon_5  584  144  16  16
+puppetmon_6  604  144  16  16
+puppetmon_7  624  144  16  16
+puppetmon_8  644  144  16  16
+
+# ── BLITZGREYMON (MEGA) — New Digimon row 0, y=424, x_start=504 ──
+blitzgreymon_1  504  424  16  16
+blitzgreymon_2  524  424  16  16
+blitzgreymon_3  544  424  16  16
+blitzgreymon_4  564  424  16  16
+blitzgreymon_5  584  424  16  16
+blitzgreymon_6  604  424  16  16
+blitzgreymon_7  624  424  16  16
+blitzgreymon_8  644  424  16  16
+
+# ── BANCHOUKOMON = BanchouMamemon (MEGA) — New Digimon row 1, y=444, x_start=504 ──
+banchoukomon_1  504  444  16  16
+banchoukomon_2  524  444  16  16
+banchoukomon_3  544  444  16  16
+banchoukomon_4  564  444  16  16
+banchoukomon_5  584  444  16  16
+banchoukomon_6  604  444  16  16
+banchoukomon_7  624  444  16  16
+banchoukomon_8  644  444  16  16
+
+# ── OMEGAMON (MEGA) — Pendulus row 15, y=344, x_start=504 ──
+omegamon_1  504  344  16  16
+omegamon_2  524  344  16  16
+omegamon_3  544  344  16  16
+omegamon_4  564  344  16  16
+omegamon_5  584  344  16  16
+omegamon_6  604  344  16  16
+omegamon_7  624  344  16  16
+omegamon_8  644  344  16  16

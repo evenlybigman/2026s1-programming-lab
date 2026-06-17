@@ -1,0 +1,93 @@
+# 새 스프라이트 시트: 디지몬 스프라이트.png (204x280)
+# 그리드: x0=2, y0=3, cellW=16, cellH=16, strideX=20, strideY=20
+# 셀(col,row) → x=2+col*20, y=3+row*20
+#
+# 프레임 선택:
+#   _1 = col5  (걷기/먹기1)
+#   _2 = col6  (걷기/먹기2)
+#   _3 = col3  (부상/슬픔)
+#   _4 = col7  (수면/케이지) — 퍼펫몬은 col6
+
+# ── 보타몬 (row0, y=3) ──
+botamon_1   102   3  16  16
+botamon_2   122   3  16  16
+botamon_3    62   3  16  16
+botamon_4   162   3  16  16
+
+# ── 코로몬 (row1, y=23) ──
+koromon_1   102  23  16  16
+koromon_2   122  23  16  16
+koromon_3    62  23  16  16
+koromon_4   142  23  16  16
+
+# ── 아구몬 (row2, y=43) ──
+agumon_1   102  43  16  16
+agumon_2   122  43  16  16
+agumon_3    62  43  16  16
+agumon_4   142  43  16  16
+
+# ── 베타몬 (row3, y=63) ──
+betamon_1   102  63  16  16
+betamon_2   122  63  16  16
+betamon_3    62  63  16  16
+betamon_4   142  63  16  16
+
+# ── 그레이몬 (row4, y=83) ──
+greymon_1   102  83  16  16
+greymon_2   122  83  16  16
+greymon_3    62  83  16  16
+greymon_4   142  83  16  16
+
+# ── 데블몬 (row5, y=103) ──
+devimon_1   102 103  16  16
+devimon_2   122 103  16  16
+devimon_3    62 103  16  16
+devimon_4   142 103  16  16
+
+# ── 에어드라몬 (row6, y=123) ──
+airdramon_1   102 123  16  16
+airdramon_2   122 123  16  16
+airdramon_3    62 123  16  16
+airdramon_4   142 123  16  16
+
+# ── 티라노몬 (row7, y=143) ──
+tyrannomon_1   102 143  16  16
+tyrannomon_2   122 143  16  16
+tyrannomon_3    62 143  16  16
+tyrannomon_4   142 143  16  16
+
+# ── 메라몬 (row8, y=163) ──
+meramon_1   102 163  16  16
+meramon_2   122 163  16  16
+meramon_3    62 163  16  16
+meramon_4   142 163  16  16
+
+# ── 시드라몬 (row9, y=183) ──
+seadramon_1   102 183  16  16
+seadramon_2   122 183  16  16
+seadramon_3    62 183  16  16
+seadramon_4   142 183  16  16
+
+# ── 워매몬 (row10, y=203) ──
+wormmon_1   102 203  16  16
+wormmon_2   122 203  16  16
+wormmon_3    62 203  16  16
+wormmon_4   142 203  16  16
+
+# ── 메탈그레이몬 (row11, y=223) ──
+metalgreymon_1   102 223  16  16
+metalgreymon_2   122 223  16  16
+metalgreymon_3    62 223  16  16
+metalgreymon_4   142 223  16  16
+
+# ── 콩알몬 (row12, y=243) ──
+sukamon_1   102 243  16  16
+sukamon_2   122 243  16  16
+sukamon_3    62 243  16  16
+sukamon_4   142 243  16  16
+
+# ── 퍼펫몬 (row13, y=263) — 프레임이 1열 적음: _4=col6 ──
+puppetmon_1    82 263  16  16
+puppetmon_2   102 263  16  16
+puppetmon_3    42 263  16  16
+puppetmon_4   122 263  16  16

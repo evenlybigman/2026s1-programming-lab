@@ -1,7 +1,7 @@
 ﻿#include "digimon.h"
 #include <string.h>
 #include <stdio.h>
-#include <stdint.h>
+#include <stdlib.h>
 
 /* =========================================================
  * max_dp_table
@@ -29,7 +29,7 @@ int max_dp_table[] = {
 DigimonInfo digimon_table[] = { //데이터 임시 수정 필요
     // ── 디지에그 ────────────────────────────────────
     // name          level     power  weight  type    hungry  strength  sleep  wake
-    {"디지에그1",     EGG,      0,      0,     FREE,      0,      0,      0,    0},
+    {"디지에그",     EGG,      0,      0,     FREE,      0,      0,      0,    0},
     {"깜몬",          BABY1,    0,     10,     FREE,   1800,   1800,    21,    7},
     {"코로몬",        BABY2,    0,     10,     FREE,   1800,   1800,    21,    7},
     // ── 성장기 ────────────────────────────────────
@@ -167,13 +167,13 @@ static const EvoRule evo_rules[] = {
      *   나쁜 경로(티라노몬/메라몬/시드라몬)  → 콩알몬
      *   최악 경로(워매몬)                    → 퍼펫몬
      *   ※ 배틀 시스템 구현 후 min_wins=12 로 변경 예정             */
-    {  IDX_GREYMON,           IDX_METALGREYMON,    99,   0,    99,   0,   0 }, // TODO: min_wins=12
-    {  IDX_DEVIMON,           IDX_METALGREYMON,    99,   0,    99,   0,   0 }, // TODO: min_wins=12
-    {  IDX_AIRDRAMON,         IDX_METALGREYMON,    99,   0,    99,   0,   0 }, // TODO: min_wins=12
-    {  IDX_TYRANNOMON,        IDX_SUKAMON,         99,   0,    99,   0,   0 }, // TODO: min_wins=12
-    {  IDX_MERAMON,           IDX_SUKAMON,         99,   0,    99,   0,   0 }, // TODO: min_wins=12
-    {  IDX_SEADRAMON,         IDX_SUKAMON,         99,   0,    99,   0,   0 }, // TODO: min_wins=12
-    {  IDX_WORMMON,           IDX_PUPPETMON,       99,   0,    99,   0,   0 }, // TODO: min_wins=12
+    {  IDX_GREYMON,           IDX_METALGREYMON,    99,   0,    99,   0,  12 },
+    {  IDX_DEVIMON,           IDX_METALGREYMON,    99,   0,    99,   0,  12 },
+    {  IDX_AIRDRAMON,         IDX_METALGREYMON,    99,   0,    99,   0,  12 },
+    {  IDX_TYRANNOMON,        IDX_SUKAMON,         99,   0,    99,   0,  12 },
+    {  IDX_MERAMON,           IDX_SUKAMON,         99,   0,    99,   0,  12 },
+    {  IDX_SEADRAMON,         IDX_SUKAMON,         99,   0,    99,   0,  12 },
+    {  IDX_WORMMON,           IDX_PUPPETMON,       99,   0,    99,   0,  12 },
 
     /* ── ULTIMATE → MEGA ────────────────────────────────────
      *   메탈그레이몬 + 완벽 케어(≤1) + 최고 노력(≥15) + 과식 없음 → 오메가몬
@@ -181,7 +181,6 @@ static const EvoRule evo_rules[] = {
      *   메탈그레이몬 폴백                                        → 반초콩알몬
      *   콩알몬                                                   → 반초콩알몬
      *   퍼펫몬                                                   → 반초콩알몬   */
-    {  IDX_METALGREYMON,      IDX_OMEGAMON,         1,  15,     1,   0,   0 }, // 완벽 조건
     {  IDX_METALGREYMON,      IDX_BLITZGREYMON,     3,   0,    99,   0,   0 }, // 좋은 케어
     {  IDX_METALGREYMON,      IDX_BANCHOUKOMON,    99,   0,    99,   0,   0 }, // 폴백
     {  IDX_SUKAMON,           IDX_BANCHOUKOMON,    99,   0,    99,   0,   0 },
@@ -204,6 +203,7 @@ static void do_evolve(GameData *game, int next_idx) {
     d->type         = digimon_table[next_idx].type;
     d->weight       = digimon_table[next_idx].base_weight;
     d->max_dp       = max_dp_table[d->level];
+    d->dp           = d->max_dp;   /* 진화 시 DP 꽉 채움 */
 
     /* 태어날 때 배고픔·근력 0 → 즉시 콜 발생 */
     d->hungry             = 0;
@@ -253,9 +253,11 @@ bool check_call(GameData *game) {
     Digimon *d   = &game->current;
     time_t   now = time(NULL);
 
-    bool need_call = d->hungry    <= 1
-                  || d->strength  <= 1
-                  || d->is_injuries;
+    /* 콜 조건: 배고픔 0 / 부상 / 똥 가득 (알은 제외) */
+    if (d->level == EGG) { game->is_call = false; return false; }
+    bool need_call = d->hungry == 0
+                  || d->is_injuries
+                  || d->poop >= MAX_POOP;
 
     if (need_call && !game->is_call) {
         game->is_call  = true;
@@ -327,7 +329,7 @@ void init_digimon(GameData* game) {
     d->last_hungry_tick   = now;
     d->last_strength_tick = now;
     game->last_update      = now;
-    game->is_call          = true;
+    game->is_call          = false;
     game->call_time        = now;
     game->hatch_target_idx = -1;
 
@@ -391,6 +393,41 @@ void action_sleep_toggle(GameData *game) {
     if (d->level == EGG) return;
     d->is_sleep = !d->is_sleep;
 }
+
+/* =========================================================
+ * 배틀 시스템
+ * ========================================================= */
+
+int calc_power(const Digimon *d) {
+    int base     = digimon_table[d->table_idx].base_power;
+    int str_b    = d->strength * POWER_PER_STRENGTH;
+    int wt_bonus = 0;
+    /* 근력 최대 + 체중 최대 미만이면 보너스 +16 */
+    if (d->strength == MAX_STRENGTH && d->weight < MAX_WEIGHT)
+        wt_bonus = POWER_BONUS_MAX;
+    return base + str_b + wt_bonus;
+}
+
+void gen_cpu_opponent(BattleOpponent *opp, Level level) {
+    int cands[DIGIMON_TABLE_SIZE];
+    int cnt = 0;
+    for (int i = 0; i < DIGIMON_TABLE_SIZE; i++) {
+        if (digimon_table[i].level == level && digimon_table[i].base_power > 0)
+            cands[cnt++] = i;
+    }
+    if (cnt == 0) {
+        strncpy_s(opp->name, MAX_NAME_LEN, "???", 3);
+        opp->power = 10;
+        return;
+    }
+    int idx  = cands[rand() % cnt];
+    strncpy_s(opp->name, MAX_NAME_LEN, digimon_table[idx].name, MAX_NAME_LEN - 1);
+    int base = digimon_table[idx].base_power;
+    int var  = base / 5;   /* ±20% */
+    opp->power = base + (rand() % (var * 2 + 1)) - var;
+    if (opp->power < 1) opp->power = 1;
+}
+
 
 /* crossed_hour - from~to 구간 안에 target_hour 정각이 포함되어 있으면 true.
  *   update_status()의 1초 틱마다 취침/기상 시각 통과 여부를 판정한다. */
@@ -492,31 +529,155 @@ void apply_offline_time(GameData *game) {
 }
 
 /* =========================================================
- * 저장 / 불러오기
- *   파일 포맷: [magic 4B][version 4B][GameData]
- *   버전 불일치 시 load_game()은 false 반환 → 새 게임 시작.
- *   SAVE_FILE / SAVE_MAGIC / SAVE_VERSION 은 digimon.h 에 정의.
+ * 저장 / 불러오기  —  텍스트 key=value 포맷
+ *   파일: digimon.txt  (직접 열어서 확인·수정 가능)
+ *   헤더: [DIGIMON_SAVE v<VERSION>]
+ *   버전 불일치 시 load_game()은 false → 새 게임 시작.
  * ========================================================= */
 bool save_game(const GameData *game) {
     FILE *fp;
-    if (fopen_s(&fp, SAVE_FILE, "wb") != 0) return false;
-    uint32_t hdr[2] = { SAVE_MAGIC, SAVE_VERSION };
-    fwrite(hdr,  sizeof(hdr),      1, fp);
-    fwrite(game, sizeof(GameData), 1, fp);
+    if (fopen_s(&fp, SAVE_FILE, "w") != 0) return false;
+
+    const Tamer   *t = &game->tamer;
+    const Digimon *d = &game->current;
+
+    fprintf(fp, "[DIGIMON_SAVE v%u]\n", SAVE_VERSION);
+
+    /* 테이머 */
+    fprintf(fp, "tamer_name=%s\n",        t->name);
+    fprintf(fp, "tamer_battles=%d\n",     t->battles);
+    fprintf(fp, "is_digimon=%d\n",        (int)t->is_digimon);
+
+    /* 디지몬 */
+    fprintf(fp, "dname=%s\n",             d->name);
+    fprintf(fp, "table_idx=%d\n",         d->table_idx);
+    fprintf(fp, "level=%d\n",             (int)d->level);
+    fprintf(fp, "type=%d\n",              (int)d->type);
+    fprintf(fp, "age=%d\n",               d->age);
+    fprintf(fp, "weight=%d\n",            d->weight);
+    fprintf(fp, "hungry=%d\n",            d->hungry);
+    fprintf(fp, "overfeed=%d\n",          d->overfeed);
+    fprintf(fp, "strength=%d\n",          d->strength);
+    fprintf(fp, "poop=%d\n",              d->poop);
+    fprintf(fp, "care_mistakes=%d\n",     d->care_mistakes);
+    fprintf(fp, "dp=%d\n",                d->dp);
+    fprintf(fp, "max_dp=%d\n",            d->max_dp);
+    fprintf(fp, "effort=%d\n",            d->effort);
+    fprintf(fp, "train_count=%d\n",       d->train_count);
+    fprintf(fp, "battles=%d\n",           d->battles);
+    fprintf(fp, "wins=%d\n",              d->wins);
+    fprintf(fp, "sleep=%d\n",             d->sleep);
+    fprintf(fp, "is_sleep=%d\n",          (int)d->is_sleep);
+    fprintf(fp, "is_overfed=%d\n",        (int)d->is_overfed);
+    fprintf(fp, "injuries=%d\n",          d->injuries);
+    fprintf(fp, "is_injuries=%d\n",       (int)d->is_injuries);
+    fprintf(fp, "is_old=%d\n",            (int)d->is_old);
+    fprintf(fp, "overfeed_time=%I64d\n",       (long long)d->overfeed_time);
+    fprintf(fp, "injury_time=%I64d\n",         (long long)d->injury_time);
+    fprintf(fp, "hungry_zero_time=%I64d\n",    (long long)d->hungry_zero_time);
+    fprintf(fp, "strength_zero_time=%I64d\n",  (long long)d->strength_zero_time);
+    fprintf(fp, "last_hungry_tick=%I64d\n",    (long long)d->last_hungry_tick);
+    fprintf(fp, "last_strength_tick=%I64d\n",  (long long)d->last_strength_tick);
+    fprintf(fp, "last_midnight=%I64d\n",       (long long)d->last_midnight);
+    fprintf(fp, "level_start_time=%I64d\n",    (long long)d->level_start_time);
+
+    /* GameData */
+    fprintf(fp, "last_update=%I64d\n",     (long long)game->last_update);
+    fprintf(fp, "is_call=%d\n",           (int)game->is_call);
+    fprintf(fp, "call_time=%I64d\n",       (long long)game->call_time);
+    fprintf(fp, "hatch_target_idx=%d\n",  game->hatch_target_idx);
+
     fclose(fp);
     return true;
 }
 
 bool load_game(GameData *game) {
     FILE *fp;
-    if (fopen_s(&fp, SAVE_FILE, "rb") != 0) return false;
-    uint32_t hdr[2];
-    bool ok = (fread(hdr, sizeof(hdr), 1, fp) == 1)
-           && (hdr[0] == SAVE_MAGIC)
-           && (hdr[1] == SAVE_VERSION)
-           && (fread(game, sizeof(GameData), 1, fp) == 1);
+    if (fopen_s(&fp, SAVE_FILE, "r") != 0) return false;
+
+    char line[512];
+
+    /* 헤더 확인 */
+    if (!fgets(line, sizeof(line), fp)) { fclose(fp); return false; }
+    unsigned ver = 0;
+    if (sscanf_s(line, "[DIGIMON_SAVE v%u]", &ver) != 1 || ver != SAVE_VERSION) {
+        fclose(fp); return false;
+    }
+
+    memset(game, 0, sizeof(GameData));
+    game->hatch_target_idx = -1;
+
+    Tamer   *t = &game->tamer;
+    Digimon *d = &game->current;
+
+    while (fgets(line, sizeof(line), fp)) {
+        /* \r\n 제거 */
+        for (char *p = line; *p; p++) {
+            if (*p == '\r' || *p == '\n') { *p = '\0'; break; }
+        }
+        char *eq = strchr(line, '=');
+        if (!eq) continue;
+        *eq = '\0';
+        const char *key = line;
+        const char *val = eq + 1;
+
+        int      iv = 0;
+        long long lv = 0;
+
+#define KS(k, f, n) if (strcmp(key,(k))==0){strncpy_s((f),(n),(val),(n)-1);continue;}
+#define KI(k, f)    if (strcmp(key,(k))==0){sscanf_s((val),"%d",&iv);(f)=iv;continue;}
+#define KB(k, f)    if (strcmp(key,(k))==0){sscanf_s((val),"%d",&iv);(f)=(iv!=0);continue;}
+#define KE(k, f, T) if (strcmp(key,(k))==0){sscanf_s((val),"%d",&iv);(f)=(T)iv;continue;}
+#define KL(k, f)    if (strcmp(key,(k))==0){sscanf_s((val),"%I64d",&lv);(f)=(time_t)lv;continue;}
+
+        KS("tamer_name",        t->name,           MAX_NAME_LEN)
+        KI("tamer_battles",     t->battles)
+        KB("is_digimon",        t->is_digimon)
+        KS("dname",             d->name,            MAX_NAME_LEN)
+        KI("table_idx",         d->table_idx)
+        KE("level",             d->level,           Level)
+        KE("type",              d->type,            DigimonType)
+        KI("age",               d->age)
+        KI("weight",            d->weight)
+        KI("hungry",            d->hungry)
+        KI("overfeed",          d->overfeed)
+        KI("strength",          d->strength)
+        KI("poop",              d->poop)
+        KI("care_mistakes",     d->care_mistakes)
+        KI("dp",                d->dp)
+        KI("max_dp",            d->max_dp)
+        KI("effort",            d->effort)
+        KI("train_count",       d->train_count)
+        KI("battles",           d->battles)
+        KI("wins",              d->wins)
+        KI("sleep",             d->sleep)
+        KB("is_sleep",          d->is_sleep)
+        KB("is_overfed",        d->is_overfed)
+        KI("injuries",          d->injuries)
+        KB("is_injuries",       d->is_injuries)
+        KB("is_old",            d->is_old)
+        KL("overfeed_time",     d->overfeed_time)
+        KL("injury_time",       d->injury_time)
+        KL("hungry_zero_time",  d->hungry_zero_time)
+        KL("strength_zero_time",d->strength_zero_time)
+        KL("last_hungry_tick",  d->last_hungry_tick)
+        KL("last_strength_tick",d->last_strength_tick)
+        KL("last_midnight",     d->last_midnight)
+        KL("level_start_time",  d->level_start_time)
+        KL("last_update",       game->last_update)
+        KB("is_call",           game->is_call)
+        KL("call_time",         game->call_time)
+        KI("hatch_target_idx",  game->hatch_target_idx)
+
+#undef KS
+#undef KI
+#undef KB
+#undef KE
+#undef KL
+    }
+
     fclose(fp);
-    return ok;
+    return t->is_digimon;
 }
 
 void update_status(GameData* game) {

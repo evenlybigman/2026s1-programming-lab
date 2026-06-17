@@ -83,8 +83,7 @@ typedef enum {
     IDX_PUPPETMON    = 14, // 퍼펫몬
     IDX_BLITZGREYMON = 15, // 블리츠그레이몬
     IDX_BANCHOUKOMON = 16, // 반초콩알몬
-    IDX_OMEGAMON     = 17, // 오메가몬
-    DIGIMON_TABLE_SIZE = 18
+    DIGIMON_TABLE_SIZE = 17
 } DigimonIdx;
 
 /* =========================================================
@@ -255,9 +254,8 @@ void apply_offline_time(GameData *game);
  *   GameData 구조체를 변경했다면 SAVE_VERSION을 반드시 올린다.
  *   버전이 달라지면 load_game()이 false를 반환해 새 게임으로 시작된다.
  * ========================================================= */
-#define SAVE_FILE    "digimon.sav"
-#define SAVE_MAGIC   0x44474D31u   /* 'D''G''M''1' */
-#define SAVE_VERSION 1u
+#define SAVE_FILE    "digimon.txt"
+#define SAVE_VERSION 2u
 
 /**
  * save_game - 현재 게임 상태를 파일에 저장한다.
@@ -346,5 +344,34 @@ void action_cure(GameData *game);
  *   알 상태에서는 무시된다.
  */
 void action_sleep_toggle(GameData *game);
+
+/* =========================================================
+ * 배틀 시스템
+ * ========================================================= */
+
+typedef struct {
+    char name[MAX_NAME_LEN];
+    int  power;
+} BattleOpponent;
+
+typedef enum {
+    BATTLE_WIN  = 0,
+    BATTLE_LOSE = 1,
+    BATTLE_DRAW = 2,
+} BattleResult;
+
+/**
+ * calc_power - 현재 디지몬의 공격력을 계산한다.
+ *   base_power + 근력 보너스(근력×4) + 체중 최적 보너스(최대 16)
+ *   단, weight == MAX_WEIGHT && strength == MAX_STRENGTH 이면 보너스 무효.
+ */
+int calc_power(const Digimon *d);
+
+/**
+ * gen_cpu_opponent - 현재 레벨에 맞는 CPU 상대를 생성한다.
+ *   digimon_table에서 같은 레벨의 디지몬을 무작위 선택, ±20% 변동 적용.
+ */
+void gen_cpu_opponent(BattleOpponent *opp, Level level);
+
 
 #endif /* DIGIMON_H */

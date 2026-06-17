@@ -14,6 +14,9 @@
  *   같은 레벨 내 여러 디지몬도 table_idx로 구분 가능.
  */
 static int (*get_sprite(AnimKind kind, int frame, Level level, int table_idx))[SPRITE_W] {
+    /* 사망은 레벨/종류 무관하게 동일 스프라이트 — TODO: sprite_dead 그려야 함 */
+    if (kind == ANIM_DEAD) return sprite_dead;
+
     switch (level) {
     case EGG:
         if (kind == ANIM_HATCH)
@@ -22,9 +25,7 @@ static int (*get_sprite(AnimKind kind, int frame, Level level, int table_idx))[S
 
     case BABY1:
         switch (kind) {
-        case ANIM_WALK:
-            if (frame == 2) return sprite_botamon_3;  // 멈춤 특수 포즈
-            return frame ? sprite_botamon_2 : sprite_botamon_1;
+        case ANIM_WALK:   return frame ? sprite_botamon_2 : sprite_botamon_1;
         case ANIM_HAPPY:  return sprite_botamon_3;
         case ANIM_ATTACK: return sprite_botamon_4;
         case ANIM_EAT:    return frame ? sprite_botamon_6 : sprite_botamon_5;
@@ -34,12 +35,61 @@ static int (*get_sprite(AnimKind kind, int frame, Level level, int table_idx))[S
         }
 
     default:
-        /* TODO: table_idx 기반으로 각 디지몬 스프라이트 분기
-         *   switch (table_idx) { case IDX_AGUMON: ... } 형태로 추가
-         *   현재는 모든 BABY2 이상이 sprite_agumon_1 placeholder */
-        (void)table_idx;
-        return sprite_agumon_1;
+        /* BABY2 이상: table_idx 로 디지몬별 스프라이트 선택
+         * TODO 표시된 항목은 sprites.c 에서 해당 배열 데이터를 그려야 함 */
+#define SP_CASE(pfx) \
+        switch (kind) { \
+        case ANIM_WALK:   return frame ? pfx##_2 : pfx##_1; \
+        case ANIM_HAPPY:  return pfx##_3; \
+        case ANIM_ATTACK: return pfx##_4; \
+        case ANIM_EAT:    return frame ? pfx##_6 : pfx##_5; \
+        case ANIM_INJURY: return pfx##_7; \
+        case ANIM_SLEEP:  return pfx##_8; \
+        default:          return pfx##_1; \
+        }
+        switch (table_idx) {
+        /* ── 코로몬 (BABY2) — TODO: 그려야 함 */
+        case IDX_KOROMON:      SP_CASE(sprite_koromon)
+        /* ── 아구몬 (ROOKIE) — _1만 완성, 나머지 TODO */
+        case IDX_AGUMON:       SP_CASE(sprite_agumon)
+        /* ── 베타몬 (ROOKIE) — TODO: 그려야 함 */
+        case IDX_BETAMON:      SP_CASE(sprite_betamon)
+        /* ── 그레이몬 (CHAMPION) — TODO: 그려야 함 */
+        case IDX_GREYMON:      SP_CASE(sprite_greymon)
+        /* ── 데블몬 (CHAMPION) — TODO: 그려야 함 */
+        case IDX_DEVIMON:      SP_CASE(sprite_devimon)
+        /* ── 에어드라몬 (CHAMPION) — TODO: 그려야 함 */
+        case IDX_AIRDRAMON:    SP_CASE(sprite_airdramon)
+        /* ── 티라노몬 (CHAMPION) — TODO: 그려야 함 */
+        case IDX_TYRANNOMON:   SP_CASE(sprite_tyrannomon)
+        /* ── 메라몬 (CHAMPION) — TODO: 그려야 함 */
+        case IDX_MERAMON:      SP_CASE(sprite_meramon)
+        /* ── 시드라몬 (CHAMPION) — TODO: 그려야 함 */
+        case IDX_SEADRAMON:    SP_CASE(sprite_seadramon)
+        /* ── 워매몬 (CHAMPION) — TODO: 그려야 함 */
+        case IDX_WORMMON:      SP_CASE(sprite_wormmon)
+        /* ── 메탈그레이몬 (ULTIMATE) — TODO: 그려야 함 */
+        case IDX_METALGREYMON: SP_CASE(sprite_metalgreymon)
+        /* ── 콩알몬 (ULTIMATE) — TODO: 그려야 함 */
+        case IDX_SUKAMON:      SP_CASE(sprite_sukamon)
+        /* ── 퍼펫몬 (ULTIMATE) — TODO: 그려야 함 */
+        case IDX_PUPPETMON:    SP_CASE(sprite_puppetmon)
+        /* ── 블리츠그레이몬 (MEGA) — TODO: 그려야 함 */
+        case IDX_BLITZGREYMON: SP_CASE(sprite_blitzgreymon)
+        /* ── 반초콩알몬 (MEGA) — TODO: 그려야 함 */
+        case IDX_BANCHOUKOMON: SP_CASE(sprite_banchoukomon)
+default: return sprite_agumon_1; /* 안전 폴백 */
+        }
+#undef SP_CASE
     }
+}
+
+/* =========================================================
+ * anim_get_walk_sprite  —  walk frame 0 스프라이트를 반환한다.
+ *   인트로 화면 등 anim 루프 밖에서 기본 스프라이트가 필요할 때 사용.
+ * ========================================================= */
+int (*anim_get_walk_sprite(Level level, int table_idx))[SPRITE_W] {
+    return get_sprite(ANIM_WALK, 0, level, table_idx);
 }
 
 /* =========================================================
