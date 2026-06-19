@@ -278,9 +278,7 @@ void draw_status(const Digimon *d) {
 
     int y = STATUS_Y;
 
-    /* ─ 이름 / 레벨 ─ */
-    gotoxy(STATUS_X, y++);
-    printf("%-30s", d->name);
+    /* ─ 레벨 ─ */
     gotoxy(STATUS_X, y++);
     printf("%-15s", level_names[d->level]);
 
@@ -320,6 +318,74 @@ void draw_status(const Digimon *d) {
     clear_line(y++);  // 잔상 지우기 (부상 행)
     clear_line(y++);  // 잔상 지우기 (수면 행)
 
+    SetConsoleTextAttribute(hOut, BG_COLOR);
+}
+
+/* 티커 창 너비: NAME_W×3 + 간격 2 = 17px */
+#define TICKER_WIN_W   (NAME_W * 3 + 2)
+/* 케이지 내 티커 위치: 우측, 케이지 맨 아래 */
+#define TICKER_CAGE_X  (CAGE_START_X + CAGE_W - TICKER_WIN_W)
+#define TICKER_CAGE_Y  (CAGE_START_Y + CAGE_H - NAME_H)
+
+void draw_name_ticker(const char *eng_name, int scroll_x) {
+    /* 케이지 우측 영역 검정(0)으로 채우기 */
+    for (int py = -1; py < NAME_H; py++)
+        for (int px = 0; px < TICKER_WIN_W; px++)
+            drawPixel(TICKER_CAGE_X + px, TICKER_CAGE_Y + py, 0);
+
+    int len = 0;
+    while (eng_name[len]) len++;
+
+    for (int ci = 0; ci < len; ci++) {
+        int idx = eng_name[ci] - 'A';
+        if (idx < 0 || idx > 25) continue;
+
+        int char_x = ci * (NAME_W + 1) - scroll_x;
+        if (char_x + NAME_W <= 0 || char_x >= TICKER_WIN_W) continue;
+
+        for (int fy = 0; fy < NAME_H; fy++) {
+            for (int fx = 0; fx < NAME_W; fx++) {
+                int px = char_x + fx;
+                if (px < 0 || px >= TICKER_WIN_W) continue;
+                int pixel = font_name[idx][fy][fx];
+                if (pixel == PIXEL_BG) continue;
+                drawPixel(TICKER_CAGE_X + px, TICKER_CAGE_Y + fy, 15);
+            }
+        }
+    }
+}
+
+/* =========================================================
+ * draw_battle_info
+ *   배틀 화면 정보 행: DP 바(8칸 스케일) + 이름
+ * ========================================================= */
+#define BATTLE_BAR_W 8
+
+void draw_battle_info(int p_dp, int c_dp, int max_dp, const char *opp_name, int row) {
+    if (max_dp < 1) max_dp = 1;
+    int p_fill = (p_dp * BATTLE_BAR_W + max_dp / 2) / max_dp;
+    int c_fill = (c_dp * BATTLE_BAR_W + max_dp / 2) / max_dp;
+    if (p_fill < 0) p_fill = 0;
+    if (p_fill > BATTLE_BAR_W) p_fill = BATTLE_BAR_W;
+    if (c_fill < 0) c_fill = 0;
+    if (c_fill > BATTLE_BAR_W) c_fill = BATTLE_BAR_W;
+
+    SetConsoleTextAttribute(hOut, 15);
+    gotoxy(CAGE_START_X * 2, row);
+    printf("MY[");
+    for (int i = 0; i < BATTLE_BAR_W; i++) printf(i < p_fill ? "\x02" : ".");
+    printf("]%2d/%-2d    VS    %2d/%-2d[", p_dp, max_dp, c_dp, max_dp);
+    for (int i = 0; i < BATTLE_BAR_W; i++) printf(i < c_fill ? "\x02" : ".");
+    printf("]%s   ", opp_name);
+    SetConsoleTextAttribute(hOut, BG_COLOR);
+}
+
+void clear_status(void) {
+    SetConsoleTextAttribute(hOut, 0);
+    for (int i = 0; i < STATUS_LINES + 4; i++) {
+        gotoxy(STATUS_X, STATUS_Y + i);
+        printf("%-40s", "");
+    }
     SetConsoleTextAttribute(hOut, BG_COLOR);
 }
 
@@ -377,48 +443,43 @@ static void draw_slash(int x, int y) {
  *   3×5 + 1px 자간 = 4px/글자 → 8글자가 32px 케이지에 꼭 맞음
  * ========================================================= */
 
-/* 라벨이 끝난 직후 y (구분선 위치) */
-#define STATUS_SEP_Y     (CAGE_START_Y + MINI_H + 1)          /* = CAGE_START_Y + 6 */
-/* 값 영역 시작 y (구분선 다음 행) */
-#define STATUS_VAL_TOP   (STATUS_SEP_Y + 1)                   /* = CAGE_START_Y + 7 */
-/* 값 영역 높이 */
-#define STATUS_VAL_H     (CAGE_H - MINI_H - 2)                /* = 9 */
-/* 값 y: 하트(8px) 중앙 */
-#define STATUS_VAL_Y_HEARTS (STATUS_VAL_TOP + (STATUS_VAL_H - UI_SPRITE_H) / 2)
-/* 값 y: 숫자(7px) 중앙 */
-#define STATUS_VAL_Y_DIGITS (STATUS_VAL_TOP + (STATUS_VAL_H - DIGIT_H)     / 2)
+/* 값 y: 케이지 맨 아래에 맞춤 */
+#define STATUS_VAL_Y_HEARTS  (CAGE_START_Y + CAGE_H - UI_SPRITE_H)  /* = 13 */
+#define STATUS_VAL_Y_DIGITS  (CAGE_START_Y + CAGE_H - DIGIT_H)      /* = 14 */
 
-/* 케이지 상단에 3×5 미니 폰트로 문자열을 중앙 정렬해 그린다. */
-static void draw_mini_label(const char *str) {
-    int len = 0;
-    while (str[len]) len++;
-    int total_w = len * MINI_W + (len > 1 ? len - 1 : 0);
-    int x0 = CAGE_START_X + (CAGE_W - total_w) / 2;
-    for (int i = 0; i < len; i++) {
+/* 케이지 좌상단에 라벨 폰트로 문자열을 그린다.
+ *   대문자 → font_label (4px, 자간 0)
+ *   소문자 → font_label_lc (4px, col0 항상 공백 → 자동 1px 자간) */
+static void draw_label(const char *str) {
+    int x = CAGE_START_X;
+    for (int i = 0; str[i]; i++) {
         char c = str[i];
-        if (c >= 'a' && c <= 'z') c = (char)(c - 32);
-        if (c < 'A' || c > 'Z') continue;
-        int idx = c - 'A';
-        int x   = x0 + i * (MINI_W + 1);
-        for (int dy = 0; dy < MINI_H; dy++)
-            for (int dx = 0; dx < MINI_W; dx++)
-                if (font_mini[idx][dy][dx] == PIXEL_INK)
+        int (*font)[DIGIT_W];
+        if (c >= 'A' && c <= 'Z') {
+            font = font_label[c - 'A'];
+        } else if (c >= 'a' && c <= 'z') {
+            font = font_label_lc[c - 'a'];
+        } else {
+            x += DIGIT_W; continue;
+        }
+        for (int dy = 0; dy < DIGIT_H; dy++)
+            for (int dx = 0; dx < DIGIT_W; dx++)
+                if (font[dy][dx] == PIXEL_INK)
                     drawPixel(x + dx, CAGE_START_Y + dy, colorMap[PIXEL_INK]);
+        x += DIGIT_W;
     }
-    /* 구분선 */
-    for (int sx = 0; sx < CAGE_W; sx++)
-        drawPixel(CAGE_START_X + sx, STATUS_SEP_Y, colorMap[PIXEL_INK]);
 }
 
-/* 값 영역 중앙에 ndigits 자리 숫자를 그린다. */
+/* 케이지 하단 중앙에 ndigits 자리 숫자를 그린다. */
 static void draw_status_number(int val, int ndigits) {
     int w = ndigits * DIGIT_W + (ndigits - 1);
     int x = CAGE_START_X + (CAGE_W - w) / 2;
     draw_number(val, x, STATUS_VAL_Y_DIGITS, ndigits);
 }
 
-/* 값 영역 중앙에 "XX/XX" 형식 DP를 그린다. */
+/* 케이지 하단 중앙에 "XX/XX" 형식 DP를 그린다. */
 static void draw_status_dp(int dp, int max_dp) {
+    if (max_dp < 1) max_dp = 1;
     /* 2digits(9) + slash(2) + gap(1) + 2digits(9) = 21px */
     int x = CAGE_START_X + (CAGE_W - 21) / 2;
     int y = STATUS_VAL_Y_DIGITS;
@@ -427,7 +488,7 @@ static void draw_status_dp(int dp, int max_dp) {
     draw_number(max_dp, x + 13, y, 2);
 }
 
-/* 값 영역 중앙에 하트 바를 그린다. */
+/* 케이지 하단 중앙에 하트 바를 그린다. */
 static void draw_status_hearts(int val, int max_val) {
     int total_w = max_val * UI_SPRITE_W;
     int x = CAGE_START_X + (CAGE_W - total_w) / 2;
@@ -470,9 +531,9 @@ void show_status_screen(const Digimon *d) {
     if (d->level == EGG) return;
 
     static const char *labels[] = {
-        "HUNGRY", "STRENGTH", "AGE", "WEIGHT", "DP", "POOP", "CAREMISS", "EFFORT"
+        "Hungry", "Strength", "Age", "Weight", "Dp", "Effort", "Winrate"
     };
-    static const int PAGES = 9;  /* 0=이름/스프라이트, 1~8=스탯 */
+    static const int PAGES = 8;  /* 0=이름/스프라이트, 1~7=스탯 */
     int page = 0;
 
     int (*walk_sprite)[SPRITE_W] = anim_get_walk_sprite(d->level, d->table_idx);
@@ -482,15 +543,32 @@ void show_status_screen(const Digimon *d) {
     ULONGLONG last_scroll_ms = GetTickCount64();
     bool need_redraw = true;
 
+    /* 영문 이름 티커 */
+    const char *eng_name  = digimon_table[d->table_idx].eng_name;
+    int eng_len = 0; while (eng_name[eng_len]) eng_len++;
+    int eng_total_w = eng_len * (NAME_W + 1) - 1;
+    int eng_scroll  = -TICKER_WIN_W;  /* 오른쪽 밖에서 시작 */
+    ULONGLONG last_eng_ms = GetTickCount64();
+
     while (1) {
         ULONGLONG now_ms = GetTickCount64();
 
-        /* 페이지 0: 이름 스크롤 자동 진행 */
-        if (page == 0 && name_offset < name_max_offset
-                && now_ms - last_scroll_ms >= 400) {
-            name_offset++;
-            last_scroll_ms = now_ms;
-            need_redraw = true;
+        if (page == 0) {
+            /* 한글 이름 스크롤 */
+            if (name_offset < name_max_offset && now_ms - last_scroll_ms >= 400) {
+                name_offset++;
+                last_scroll_ms = now_ms;
+                need_redraw = true;
+            }
+            /* 영문 티커: 200ms마다 1픽셀 스크롤, 이름이 완전히 빠지면 오른쪽 밖에서 재시작 */
+            if (now_ms - last_eng_ms >= 200) {
+                last_eng_ms = now_ms;
+                if (eng_scroll > eng_total_w)
+                    eng_scroll = -TICKER_WIN_W;
+                else
+                    eng_scroll++;
+                need_redraw = true;
+            }
         }
 
         if (need_redraw) {
@@ -499,17 +577,17 @@ void show_status_screen(const Digimon *d) {
             if (page == 0) {
                 drawSprite(walk_sprite, CAGE_START_X, CAGE_START_Y, false);
                 draw_name_scroll(d->name, name_len, name_offset);
+                draw_name_ticker(eng_name, eng_scroll);
             } else {
-                draw_mini_label(labels[page - 1]);
+                draw_label(labels[page - 1]);
                 switch (page) {
-                case 1: draw_status_hearts(d->hungry,        MAX_HUNGRY);   break;
-                case 2: draw_status_hearts(d->strength,      MAX_STRENGTH); break;
-                case 3: draw_status_number(d->age,           2);            break;
-                case 4: draw_status_number(d->weight,        2);            break;
-                case 5: draw_status_dp(d->dp, d->max_dp);                   break;
-                case 6: draw_status_number(d->poop,          1);            break;
-                case 7: draw_status_number(d->care_mistakes, 2);            break;
-                case 8: draw_status_number(d->effort,        2);            break;
+                case 1: draw_status_hearts(d->hungry,   MAX_HUNGRY);   break;
+                case 2: draw_status_hearts(d->strength, MAX_STRENGTH); break;
+                case 3: draw_status_number(d->age,      2);            break;
+                case 4: draw_status_number(d->weight,   2);            break;
+                case 5: draw_status_dp(d->dp, d->max_dp);              break;
+                case 6: draw_status_number(d->effort,   2);            break;
+                case 7: draw_status_dp(d->wins, d->battles);           break;
                 }
             }
 

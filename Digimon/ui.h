@@ -176,6 +176,32 @@ void drawDigit(int digit, int startX, int startY);
 void show_status_screen(const Digimon *d);
 
 /**
+ * clear_status - 상태창 영역을 공백으로 지운다.
+ * EGG 상태 진입 시(신규 게임, 사망) 호출한다.
+ */
+void clear_status(void);
+
+/**
+ * draw_battle_info - 배틀 화면 정보 행(DP 바·이름)을 출력한다.
+ * @p_dp:     플레이어 현재 DP
+ * @c_dp:     상대 현재 DP
+ * @max_dp:   양측 공통 최대 DP
+ * @opp_name: 상대 이름 (한글)
+ * @row:      출력 콘솔 행 (gotoxy Y)
+ */
+void draw_battle_info(int p_dp, int c_dp, int max_dp, const char *opp_name, int row);
+
+/**
+ * draw_name_ticker - 상태창 상단에 영문 이름을 픽셀 스크롤로 표시한다.
+ * @eng_name: 대문자 영문 이름 (A~Z)
+ * @scroll_x:  픽셀 단위 스크롤 오프셋 (0 = 첫 글자부터)
+ *
+ * font_name (5×8) 을 사용해 3글자 분량(17px)의 창을 슬라이드한다.
+ * 스크롤 값이 바뀔 때만 호출한다 (매 프레임 호출 불필요).
+ */
+void draw_name_ticker(const char *eng_name, int scroll_x);
+
+/**
  * flush_cage - 케이지 버퍼를 콘솔에 한 번에 출력한다.
  *   drawPixel / drawSprite / drawBackground 등은 내부 CHAR_INFO 버퍼에만 쓰고,
  *   이 함수를 호출해야 실제 화면에 반영된다.

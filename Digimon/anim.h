@@ -15,6 +15,7 @@ typedef enum {
     ANIM_WALK,    // 기본 이동
     ANIM_HATCH,   // 부화 모션 (EGG 전용)
     ANIM_HAPPY,   // 기쁨
+    ANIM_REFUSE,  // 먹이 거부 (부상 스프라이트 좌우반전)
     ANIM_EAT,     // 먹기
     ANIM_SLEEP,   // 수면
     ANIM_INJURY,  // 부상
@@ -62,6 +63,15 @@ typedef struct {
 /* =========================================================
  * 함수 선언
  * ========================================================= */
+
+/**
+ * anim_get_sprite - 임의 애니메이션 종류·프레임의 스프라이트를 반환한다.
+ * @kind:      애니메이션 종류 (ANIM_WALK, ANIM_ATTACK 등)
+ * @frame:     프레임 인덱스 (0 또는 1)
+ * @level:     현재 진화 단계
+ * @table_idx: digimon_table 인덱스
+ */
+int (*anim_get_sprite(AnimKind kind, int frame, Level level, int table_idx))[SPRITE_W];
 
 /**
  * anim_get_walk_sprite - 주어진 디지몬의 walk frame 0 스프라이트를 반환한다.

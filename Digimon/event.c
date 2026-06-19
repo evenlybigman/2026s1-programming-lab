@@ -64,7 +64,6 @@ void newGame(GameData* game) {
     }
     game->tamer.name[4] = '\0';
 
-    /* ── 2~3단계: 알 선택 → 디지몬 초기화 ── */
     selectEgg(game);
 }
 
@@ -104,14 +103,18 @@ void selectEgg(GameData* game) {
  * battle_event
  *   배틀 버튼(메뉴 2번) 에서 호출.
  *
+ *   레이아웃:
+ *     케이지 좌반(16px): 플레이어 스프라이트
+ *     케이지 우반(16px): 상대 스프라이트 (좌우 반전)
+ *     행 22:             DP 바 + 이름
+ *     행 23:             회피/피격/공격 프롬프트
+ *
  *   회피 성공률 = 자기 파워 / (플레이어파워 + CPU파워)
  *   - 플레이어: C키를 눌러 회피 시도 (500ms 창)
  *   - CPU:      파워 비례 자동 회피
- *   - 배틀 종료: 어느 쪽이든 DP 0
  * ========================================================= */
 void battle_event(GameData* game, AnimState* anim) {
     Digimon *d = &game->current;
-
     if (d->level < ROOKIE || d->dp <= 0 || d->is_sleep) return;
 
     BattleOpponent opp;
@@ -122,12 +125,32 @@ void battle_event(GameData* game, AnimState* anim) {
     int total = pp + cp;
     if (total == 0) total = 1;
 
-    int p_dp = d->dp;
-    int c_dp = d->dp;   /* CPU 시작 DP = 플레이어와 동일 */
+    int p_dp   = d->dp;
+    int c_dp   = max_dp_table[digimon_table[opp.table_idx].level];
+    int max_dp = d->max_dp;
+    if (max_dp < 1) max_dp = 1;
 
-    int info_y  = CAGE_START_Y + CAGE_H + 1;
-    int dodge_y = CAGE_START_Y + CAGE_H + 2;
-    ULONGLONG now_ms, deadline;
+    /* 위치 상수 (로컬) */
+    int p_x      = CAGE_START_X;          /* 플레이어 스프라이트 x (케이지 좌반) */
+    int c_x      = CAGE_START_X + 16;     /* 상대 스프라이트 x (케이지 우반) */
+    int sp_y     = CAGE_START_Y;          /* 스프라이트 y: 케이지 상단, 스프라이트가 16px로 꽉 채움 */
+    int info_y   = CAGE_START_Y + CAGE_H + 1;
+    int prompt_y = CAGE_START_Y + CAGE_H + 2;
+
+    /* 스프라이트 포인터 */
+    Level opp_level = digimon_table[opp.table_idx].level;
+    int (*p_walk)[SPRITE_W] = anim_get_sprite(ANIM_WALK,   0, d->level,  d->table_idx);
+    int (*p_atk )[SPRITE_W] = anim_get_sprite(ANIM_ATTACK, 0, d->level,  d->table_idx);
+    int (*c_walk)[SPRITE_W] = anim_get_sprite(ANIM_WALK,   0, opp_level, opp.table_idx);
+
+    /* ── 초기 화면 설정 ── */
+    clear_status();
+    clearMenuLines(info_y, prompt_y);
+    drawBackground();
+    drawSprite(p_walk, p_x, sp_y, false);  /* 플레이어: 오른쪽 바라봄 */
+    drawSprite(c_walk, c_x, sp_y, true);   /* 상대:     왼쪽 바라봄 (반전) */
+    flush_cage();
+    draw_battle_info(p_dp, c_dp, max_dp, opp.name, info_y);
 
     /* ── 배틀 루프: 한 쪽 DP 0 될 때까지 ── */
     while (p_dp > 0 && c_dp > 0) {
@@ -135,20 +158,17 @@ void battle_event(GameData* game, AnimState* anim) {
         /* 이전 키 입력 비우기 */
         while (_kbhit()) _getch();
 
-        /* DP + 회피 프롬프트 표시 */
+        /* 회피 프롬프트 */
         SetConsoleTextAttribute(hOut, 15);
-        gotoxy(CAGE_START_X * 2, info_y);
-        printf("MY:%d  %s:%d     ", p_dp, opp.name, c_dp);
-        gotoxy(CAGE_START_X * 2, dodge_y);
-        printf("C: 회피!              ");
+        gotoxy(CAGE_START_X * 2, prompt_y);
+        printf("%-50s", "C: 회피!");
         SetConsoleTextAttribute(hOut, BG_COLOR);
 
         /* ── CPU가 공격: 500ms 회피 입력 창 ── */
         bool dodged = false;
-        deadline = GetTickCount64() + 500;
+        ULONGLONG deadline = GetTickCount64() + 500;
+        ULONGLONG now_ms;
         while ((now_ms = GetTickCount64()) < deadline) {
-            anim_update(anim, now_ms, d);
-            draw_cage_ui(d);
             if (_kbhit()) {
                 int k = _getch();
                 if (k == 'c' || k == 'C') {
@@ -156,48 +176,65 @@ void battle_event(GameData* game, AnimState* anim) {
                     break;
                 }
             }
-            Sleep(10);
-        }
-
-        if (!dodged) p_dp--;
-
-        /* 회피/피격 결과 표시 (300ms) */
-        SetConsoleTextAttribute(hOut, 15);
-        gotoxy(CAGE_START_X * 2, dodge_y);
-        printf(dodged ? "회피!                 " : "피격!                 ");
-        SetConsoleTextAttribute(hOut, BG_COLOR);
-        deadline = GetTickCount64() + 300;
-        while ((now_ms = GetTickCount64()) < deadline) {
-            anim_update(anim, now_ms, d);
-            draw_cage_ui(d);
             Sleep(16);
         }
+
+        if (!dodged) {
+            p_dp--;
+            /* 플레이어 피격: 스프라이트 3회 깜빡임 */
+            for (int i = 0; i < 3; i++) {
+                clearSprite(p_x, sp_y);
+                flush_cage();
+                Sleep(60);
+                drawSprite(p_walk, p_x, sp_y, false);
+                flush_cage();
+                Sleep(60);
+            }
+        }
+
+        /* 회피/피격 결과 */
+        SetConsoleTextAttribute(hOut, 15);
+        gotoxy(CAGE_START_X * 2, prompt_y);
+        printf("%-50s", dodged ? "회피!" : "피격!");
+        SetConsoleTextAttribute(hOut, BG_COLOR);
+        draw_battle_info(p_dp, c_dp, max_dp, opp.name, info_y);
+        Sleep(300);
 
         if (p_dp <= 0) break;
 
-        /* ── 플레이어가 공격: 공격 애니메이션 (400ms) ── */
-        anim_play(anim, ANIM_ATTACK, 400, GetTickCount64());
-        deadline = GetTickCount64() + 400;
-        while ((now_ms = GetTickCount64()) < deadline) {
-            anim_update(anim, now_ms, d);
-            draw_cage_ui(d);
-            Sleep(16);
-        }
+        /* ── 플레이어 공격: 공격 스프라이트 표시 (400ms) ── */
+        clearSprite(p_x, sp_y);
+        drawSprite(p_atk, p_x, sp_y, false);
+        flush_cage();
+        Sleep(200);
 
         /* CPU 자동 회피: 파워 비례 */
-        if (rand() % total >= cp) c_dp--;
-
-        /* DP 갱신 표시 (200ms) */
-        SetConsoleTextAttribute(hOut, 15);
-        gotoxy(CAGE_START_X * 2, info_y);
-        printf("MY:%d  %s:%d     ", p_dp, opp.name, c_dp);
-        SetConsoleTextAttribute(hOut, BG_COLOR);
-        deadline = GetTickCount64() + 200;
-        while ((now_ms = GetTickCount64()) < deadline) {
-            anim_update(anim, now_ms, d);
-            draw_cage_ui(d);
-            Sleep(16);
+        bool cpu_dodged = (rand() % total < cp);
+        if (!cpu_dodged) {
+            c_dp--;
+            /* 상대 피격: 스프라이트 3회 깜빡임 */
+            for (int i = 0; i < 3; i++) {
+                clearSprite(c_x, sp_y);
+                flush_cage();
+                Sleep(60);
+                drawSprite(c_walk, c_x, sp_y, true);
+                flush_cage();
+                Sleep(60);
+            }
         }
+
+        /* 공격 모션 종료: walk 스프라이트로 복귀 */
+        clearSprite(p_x, sp_y);
+        drawSprite(p_walk, p_x, sp_y, false);
+        flush_cage();
+
+        /* DP 갱신 표시 + CPU 회피/피격 결과 */
+        SetConsoleTextAttribute(hOut, 15);
+        gotoxy(CAGE_START_X * 2, prompt_y);
+        printf("%-50s", cpu_dodged ? "상대 회피!" : "상대 피격!");
+        SetConsoleTextAttribute(hOut, BG_COLOR);
+        draw_battle_info(p_dp, c_dp, max_dp, opp.name, info_y);
+        Sleep(300);
     }
 
     /* ── 결과 처리 ── */
@@ -212,11 +249,12 @@ void battle_event(GameData* game, AnimState* anim) {
     d->dp = p_dp > 0 ? p_dp : 0;
 
     /* ── 결과 표시 (1500ms) ── */
-    clearMenuLines(info_y, dodge_y);
     SetConsoleTextAttribute(hOut, 15);
     gotoxy(CAGE_START_X * 2, info_y);
-    printf(result == BATTLE_WIN  ? "WIN!" :
-           result == BATTLE_LOSE ? "LOSE" : "DRAW");
+    printf("%-50s", result == BATTLE_WIN  ? "WIN!" :
+                    result == BATTLE_LOSE ? "LOSE" : "DRAW");
+    gotoxy(CAGE_START_X * 2, prompt_y);
+    printf("%-50s", "");
     SetConsoleTextAttribute(hOut, BG_COLOR);
     Sleep(1500);
 

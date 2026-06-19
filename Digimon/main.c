@@ -1,4 +1,4 @@
-#include "digimon.h"
+﻿#include "digimon.h"
 #include "ui.h"
 #include "anim.h"
 #include "event.h"
@@ -238,12 +238,14 @@ int main(void) {
         apply_offline_time(&game);
     }
 
-    /* 게임 화면 초기 출력 */
+    /* 게임 화면 초기 출력 (EGG 중엔 메뉴/상태창 숨김) */
     drawBackground();
     flush_cage();
-    drawMenu();
-    draw_status(&game.current);
-    draw_call_alert(game.is_call);
+    if (game.current.level != EGG) {
+        drawMenu();
+        draw_status(&game.current);
+        draw_call_alert(game.is_call);
+    }
 
     ULONGLONG now_ms = GetTickCount64();
     AnimState anim;
@@ -257,95 +259,124 @@ int main(void) {
     ULONGLONG last_blink_ms = 0;
     bool      blink_on      = true;
     bool      prev_is_call  = false;
+    Level     prev_level    = game.current.level;
 
     while (1) {
         now_ms = GetTickCount64();
         time_t now = time(NULL);
 
-        /* 키 입력: Z(이전) / X(다음) / C(확인) */
+        /* 키 입력: Z(이전) / X(다음) / C(확인) — EGG 중엔 메뉴 조작 무시 */
         if (_kbhit()) {
             int key = _getch();
-            switch (key) {
-            case 'z': case 'Z':
-                menu_selected--;
-                if (menu_selected < 0) menu_selected = MENU_TOTAL_COUNT - 1;
-                drawMenu();
-                break;
-            case 'x': case 'X':
-                menu_selected++;
-                if (menu_selected == MENU_TOTAL_COUNT) menu_selected = 0;
-                drawMenu();
-                break;
-            case 'v': case 'V':
-                sprite_viewer(&game.current);
-                break;
-            case 'c': case 'C':
-                switch (menu_selected) {
-                case 0: /* 상태 */
-                    show_status_screen(&game.current);
+            if (game.current.level != EGG) {
+                switch (key) {
+                case 'z': case 'Z':
+                    menu_selected--;
+                    if (menu_selected < 0) menu_selected = MENU_TOTAL_COUNT - 1;
+                    drawMenu();
                     break;
-                case 1: /* 먹이 */
-                    action_feed(&game);
-                    draw_status(&game.current);
-                    anim_play(&anim, ANIM_EAT, 1500, now_ms);
+                case 'x': case 'X':
+                    menu_selected++;
+                    if (menu_selected == MENU_TOTAL_COUNT) menu_selected = 0;
+                    drawMenu();
                     break;
-                case 2: /* 훈련 */
-                    action_train(&game);
-                    draw_status(&game.current);
-                    anim_play(&anim, ANIM_ATTACK, 800, now_ms);
+                case 'v': case 'V':
+                    sprite_viewer(&game.current);
                     break;
-                case 3: /* 배틀 */
-                    battle_event(&game, &anim);
-                    break;
-                case 4: /* 청소 */
-                    action_clean(&game);
-                    draw_status(&game.current);
-                    break;
-                case 5: /* 잠 */
-                    action_sleep_toggle(&game);
-                    draw_status(&game.current);
-                    if (game.current.is_sleep)
-                        anim_play(&anim, ANIM_SLEEP, 0, now_ms);
-                    else
-                        anim_play(&anim, ANIM_WALK,  0, now_ms);
-                    break;
-                case 6: /* 치료 */
-                    action_cure(&game);
-                    draw_status(&game.current);
-                    break;
-                case 7: /* 저장 */
-                    save_game(&game);
+                case 'c': case 'C':
+                    switch (menu_selected) {
+                    case 0: /* 상태 */
+                        show_status_screen(&game.current);
+                        break;
+                    case 1: /* 먹이 */
+                        if (action_feed(&game))
+                            anim_play(&anim, ANIM_EAT, 2400, now_ms);
+                        else if (game.current.level != EGG && !game.current.is_sleep)
+                            anim_play(&anim, ANIM_REFUSE, 800, now_ms);
+                        draw_status(&game.current);
+                        break;
+                    case 2: /* 훈련 */
+                        if (action_train(&game))
+                            anim_play(&anim, ANIM_ATTACK, 800, now_ms);
+                        draw_status(&game.current);
+                        break;
+                    case 3: /* 배틀 */
+                        battle_event(&game, &anim);
+                        break;
+                    case 4: /* 청소 */
+                        action_clean(&game);
+                        draw_status(&game.current);
+                        break;
+                    case 5: /* 잠 */
+                        action_sleep_toggle(&game);
+                        draw_status(&game.current);
+                        if (game.current.is_sleep)
+                            anim_play(&anim, ANIM_SLEEP, 0, now_ms);
+                        else
+                            anim_play(&anim, ANIM_WALK,  0, now_ms);
+                        break;
+                    case 6: /* 치료 */
+                        action_cure(&game);
+                        draw_status(&game.current);
+                        break;
+                    case 7: /* 저장 */
+                        save_game(&game);
+                        break;
+                    }
+                    check_call(&game);
+                    draw_call_alert(game.is_call);
                     break;
                 }
-                break;
-#ifdef _DEBUG
-            case 't': case 'T':
-                /* 디버그: 진화 타이머 즉시 만료 */
-                game.current.level_start_time -= evolution_time[game.current.level];
-                break;
-#endif
             }
+#ifdef _DEBUG
+            if ((key == 't' || key == 'T') && game.current.level != MEGA)
+                game.current.level_start_time -= evolution_time[game.current.level];
+#endif
         }
 
         /* 부화/진화 애니메이션 처리 */
         hatch(&game, &anim, &hatch_anim_started, now_ms);
 
+        /* EGG → 비-EGG 전환 또는 진화 시 UI 갱신 + 티커 리셋 */
+        if (prev_level != game.current.level) {
+            if (prev_level == EGG) {
+                drawMenu();
+                draw_status(&game.current);
+            }
+        }
+        prev_level = game.current.level;
+
         /* 애니메이션 갱신 → 버퍼에 쓰고 한 번에 출력 */
         anim_update(&anim, now_ms, &game.current);
         draw_cage_ui(&game.current);
         anim_check_random(&anim, &game.current, now_ms);
+
         flush_cage();
 
         /* 게임 수치 갱신: 1초마다 */
         if (now - last_status >= 1) {
+            bool was_sleep = game.current.is_sleep;
             bool died = game_tick(&game);
             if (died) {
                 hatch_anim_started = false;
                 anim_init(&anim, game.current.level, now_ms);
                 save_game(&game);   // 사망 → 즉시 저장
+                /* 사망 후 EGG로 돌아가므로 인터페이스 지우기 */
+                clearMenuLines(CAGE_START_Y + CAGE_H + 1, CAGE_START_Y + CAGE_H + 2);
+                clear_status();
+                draw_call_alert(false);
+                prev_level = EGG;
+            }
+            /* 자동 취침/기상 시 애니메이션 전환 */
+            if (!died && game.current.is_sleep != was_sleep) {
+                if (game.current.is_sleep)
+                    anim_play(&anim, ANIM_SLEEP, 0, now_ms);
+                else
+                    anim_play(&anim, ANIM_WALK,  0, now_ms);
             }
             last_status = now;
-            draw_status(&game.current);
+            if (game.current.level != EGG)
+                draw_status(&game.current);
         }
 
         /* 자동 저장: 60초마다 */
@@ -354,18 +385,20 @@ int main(void) {
             last_save = now;
         }
 
-        /* 콜 깜빡임: 500ms 토글 */
-        if (game.is_call) {
-            if (now_ms - last_blink_ms >= 500) {
-                blink_on      = !blink_on;
-                last_blink_ms = now_ms;
-                draw_call_alert(blink_on);
+        /* 콜 깜빡임: 500ms 토글 — EGG 중엔 표시하지 않음 */
+        if (game.current.level != EGG) {
+            if (game.is_call) {
+                if (now_ms - last_blink_ms >= 500) {
+                    blink_on      = !blink_on;
+                    last_blink_ms = now_ms;
+                    draw_call_alert(blink_on);
+                }
+            } else if (prev_is_call) {
+                /* 콜 해제됨 → 알림 지우기 */
+                draw_call_alert(false);
+                blink_on      = true;
+                last_blink_ms = 0;
             }
-        } else if (prev_is_call) {
-            /* 콜 해제됨 → 알림 지우기 */
-            draw_call_alert(false);
-            blink_on      = true;
-            last_blink_ms = 0;
         }
         prev_is_call = game.is_call;
         Sleep(10); /* ~100fps 상한 */

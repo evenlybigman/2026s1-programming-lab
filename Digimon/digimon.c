@@ -26,31 +26,31 @@ int max_dp_table[] = {
  *            hungry_tick, strength_tick,
  *            sleep_hour, wake_hour
  * ========================================================= */
-DigimonInfo digimon_table[] = { //데이터 임시 수정 필요
-    // ── 디지에그 ────────────────────────────────────
-    // name          level     power  weight  type    hungry  strength  sleep  wake
-    {"디지에그",     EGG,      0,      0,     FREE,      0,      0,      0,    0},
-    {"깜몬",          BABY1,    0,     10,     FREE,   1800,   1800,    21,    7},
-    {"코로몬",        BABY2,    0,     10,     FREE,   1800,   1800,    21,    7},
-    // ── 성장기 ────────────────────────────────────
-    {"아구몬",        ROOKIE,   18,    20,     VACCINE,1800,   1800,    21,    7},
-    {"베타몬",        ROOKIE,   10,    20,     VIRUS,  1800,   1800,    21,    7},
-    // ── 성숙기 ────────────────────────────────────
-    {"그레이몬",      CHAMPION, 75,    35,     VACCINE,1800,   1800,    22,    7},
-    {"데블몬",        CHAMPION, 65,    30,     VIRUS,  1800,   1800,    22,    7},
-    {"에어드라몬",    CHAMPION, 55,    25,     VACCINE,1800,   1800,    22,    7},
-    {"티라노몬",      CHAMPION, 70,    35,     DATA,   1800,   1800,    22,    7},
-    {"메라몬",        CHAMPION, 60,    30,     DATA,   1800,   1800,    22,    7},
-    {"시드라몬",      CHAMPION, 50,    30,     DATA,   1800,   1800,    22,    7},
-    {"워매몬",        CHAMPION, 40,    25,     VIRUS,  1800,   1800,    22,    7},
-    // ── 완전체 ────────────────────────────────────
-    {"메탈그레이몬",  ULTIMATE, 126,   40,     VIRUS,  1800,   1800,    23,    7},
-    {"콩알몬",        ULTIMATE, 118,   20,     DATA,   1800,   1800,    23,    7},
-    {"퍼펫몬",        ULTIMATE, 107,   30,     VACCINE,1800,   1800,    23,    7},
-    // ── 궁극체 ────────────────────────────────────
-    {"블리츠그레이몬",MEGA,     188,   45,     VIRUS,  1800,   1800,    23,    7},
-    {"반초콩알몬",    MEGA,     176,   25,     DATA,   1800,   1800,    23,    7},
-    {"오메가몬",      MEGA,     200,   50,     VACCINE,1800,   1800,    23,    7},
+DigimonInfo digimon_table[] = {
+    // ── 디지에그 ─────────────────────────────────────────────────────────
+    // name          eng_name           level     power  weight  type    hungry  strength  sleep  wake
+    {"디지에그",     "DIGIEGG",         EGG,      0,      0,     FREE,      0,      0,      0,    0},
+    {"깜몬",         "BOTAMON",         BABY1,    0,     10,     FREE,   1800,   1800,    21,    7},
+    {"코로몬",       "KOROMON",         BABY2,    0,     10,     FREE,   1800,   1800,    21,    7},
+    // ── 성장기 ───────────────────────────────────────────────────────────
+    {"아구몬",       "AGUMON",          ROOKIE,   18,    20,     VACCINE,1800,   1800,    21,    7},
+    {"베타몬",       "BETAMON",         ROOKIE,   10,    20,     VIRUS,  1800,   1800,    21,    7},
+    // ── 성숙기 ───────────────────────────────────────────────────────────
+    {"그레이몬",     "GREYMON",         CHAMPION, 75,    35,     VACCINE,1800,   1800,    22,    7},
+    {"데블몬",       "DEVIMON",         CHAMPION, 65,    30,     VIRUS,  1800,   1800,    22,    7},
+    {"에어드라몬",   "AIRDRAMON",       CHAMPION, 55,    25,     VACCINE,1800,   1800,    22,    7},
+    {"티라노몬",     "TYRANNOMON",      CHAMPION, 70,    35,     DATA,   1800,   1800,    22,    7},
+    {"메라몬",       "MERAMON",         CHAMPION, 60,    30,     DATA,   1800,   1800,    22,    7},
+    {"시드라몬",     "SEADRAMON",       CHAMPION, 50,    30,     DATA,   1800,   1800,    22,    7},
+    {"워매몬",       "WORMMON",         CHAMPION, 40,    25,     VIRUS,  1800,   1800,    22,    7},
+    // ── 완전체 ───────────────────────────────────────────────────────────
+    {"메탈그레이몬", "METALGREYMON",    ULTIMATE, 126,   40,     VIRUS,  1800,   1800,    23,    7},
+    {"콩알몬",       "SUKAMON",         ULTIMATE, 118,   20,     DATA,   1800,   1800,    23,    7},
+    {"퍼펫몬",       "PUPPETMON",       ULTIMATE, 107,   30,     VACCINE,1800,   1800,    23,    7},
+    // ── 궁극체 ───────────────────────────────────────────────────────────
+    {"블리츠그레이몬","BLITZGREYMON",   MEGA,     188,   45,     VIRUS,  1800,   1800,    23,    7},
+    {"반초콩알몬",   "BANCHOSUKAMON",   MEGA,     176,   25,     DATA,   1800,   1800,    23,    7},
+    {"오메가몬",     "OMEGAMON",        MEGA,     200,   50,     VACCINE,1800,   1800,    23,    7},
 };
 
 /* =========================================================
@@ -162,26 +162,30 @@ static const EvoRule evo_rules[] = {
     {  IDX_BETAMON,           IDX_WORMMON,         99,   0,    99,   0,   0 }, // 폴백
 
     /* ── CHAMPION → ULTIMATE ────────────────────────────────
-     *   원작: 배틀 승리 조건 → 성숙기 종류로 완전체 결정
-     *   좋은 경로(그레이몬/데블몬/에어드라몬) → 메탈그레이몬
-     *   나쁜 경로(티라노몬/메라몬/시드라몬)  → 콩알몬
-     *   최악 경로(워매몬)                    → 퍼펫몬
-     *   ※ 배틀 시스템 구현 후 min_wins=12 로 변경 예정             */
+     *   좋은 경로(그레이몬/데블몬/에어드라몬): 12승↑ → 메탈그레이몬, 미달 → 콩알몬
+     *   나쁜 경로(티라노몬/메라몬/시드라몬):  12승↑ → 콩알몬,       미달 → 퍼펫몬
+     *   최악 경로(워매몬):                   승수 무관 → 퍼펫몬              */
     {  IDX_GREYMON,           IDX_METALGREYMON,    99,   0,    99,   0,  12 },
+    {  IDX_GREYMON,           IDX_SUKAMON,         99,   0,    99,   0,   0 }, // 폴백
     {  IDX_DEVIMON,           IDX_METALGREYMON,    99,   0,    99,   0,  12 },
+    {  IDX_DEVIMON,           IDX_SUKAMON,         99,   0,    99,   0,   0 }, // 폴백
     {  IDX_AIRDRAMON,         IDX_METALGREYMON,    99,   0,    99,   0,  12 },
+    {  IDX_AIRDRAMON,         IDX_SUKAMON,         99,   0,    99,   0,   0 }, // 폴백
     {  IDX_TYRANNOMON,        IDX_SUKAMON,         99,   0,    99,   0,  12 },
+    {  IDX_TYRANNOMON,        IDX_PUPPETMON,       99,   0,    99,   0,   0 }, // 폴백
     {  IDX_MERAMON,           IDX_SUKAMON,         99,   0,    99,   0,  12 },
+    {  IDX_MERAMON,           IDX_PUPPETMON,       99,   0,    99,   0,   0 }, // 폴백
     {  IDX_SEADRAMON,         IDX_SUKAMON,         99,   0,    99,   0,  12 },
-    {  IDX_WORMMON,           IDX_PUPPETMON,       99,   0,    99,   0,  12 },
+    {  IDX_SEADRAMON,         IDX_PUPPETMON,       99,   0,    99,   0,   0 }, // 폴백
+    {  IDX_WORMMON,           IDX_PUPPETMON,       99,   0,    99,   0,   0 },
 
     /* ── ULTIMATE → MEGA ────────────────────────────────────
-     *   메탈그레이몬 + 완벽 케어(≤1) + 최고 노력(≥15) + 과식 없음 → 오메가몬
-     *   메탈그레이몬 + 케어미스 0~3                              → 블리츠그레이몬
-     *   메탈그레이몬 폴백                                        → 반초콩알몬
-     *   콩알몬                                                   → 반초콩알몬
-     *   퍼펫몬                                                   → 반초콩알몬   */
-    {  IDX_METALGREYMON,      IDX_BLITZGREYMON,     3,   0,    99,   0,   0 }, // 좋은 케어
+     *   메탈그레이몬 + 케어≤1 + 노력≥15 + 과식 0 → 오메가몬
+     *   메탈그레이몬 + 케어≤3                     → 블리츠그레이몬
+     *   메탈그레이몬 폴백                          → 반초콩알몬
+     *   콩알몬 / 퍼펫몬                            → 반초콩알몬        */
+    {  IDX_METALGREYMON,      IDX_OMEGAMON,         1,  15,     0,   0,   0 }, // 최우선
+    {  IDX_METALGREYMON,      IDX_BLITZGREYMON,     3,   0,    99,   0,   0 },
     {  IDX_METALGREYMON,      IDX_BANCHOUKOMON,    99,   0,    99,   0,   0 }, // 폴백
     {  IDX_SUKAMON,           IDX_BANCHOUKOMON,    99,   0,    99,   0,   0 },
     {  IDX_PUPPETMON,         IDX_BANCHOUKOMON,    99,   0,    99,   0,   0 },
@@ -228,7 +232,7 @@ void check_evolution(GameData *game) {
 
     if (d->level >= MEGA)            return;
     if (game->hatch_target_idx >= 0) return; // 부화 애니메이션 대기 중
-    if (d->is_sleep && d->level >= BABY2) return;
+    if (d->is_manual_sleep && d->level >= BABY2) return;
     if (now - d->level_start_time < evolution_time[d->level]) return;
 
     /* 규칙 테이블 순회: 조건을 충족하는 첫 번째 규칙 적용 */
@@ -256,6 +260,7 @@ bool check_call(GameData *game) {
     /* 콜 조건: 배고픔 0 / 부상 / 똥 가득 (알은 제외) */
     if (d->level == EGG) { game->is_call = false; return false; }
     bool need_call = d->hungry == 0
+                  || (d->level >= ROOKIE && d->strength == 0)
                   || d->is_injuries
                   || d->poop >= MAX_POOP;
 
@@ -315,10 +320,11 @@ void init_digimon(GameData* game) {
     d->sleep = 0;
 
     // 플래그
-    d->is_sleep    = false;
-    d->is_overfed  = false;
-    d->is_injuries = false;
-    d->is_old      = false;
+    d->is_sleep        = false;
+    d->is_manual_sleep = false;
+    d->is_overfed      = false;
+    d->is_injuries     = false;
+    d->is_old          = false;
 
     // 시간
     time_t now = time(NULL);
@@ -344,29 +350,31 @@ void init_digimon(GameData* game) {
  * 플레이어 액션
  * ========================================================= */
 
-void action_feed(GameData *game) {
+bool action_feed(GameData *game) {
     Digimon *d = &game->current;
-    if (d->level == EGG || d->is_sleep) return;
+    if (d->level == EGG || d->is_sleep) return false;
 
     if (d->hungry >= MAX_HUNGRY) {
-        /* 과식: 배고픔 이미 최대 → 과식 카운트 */
+        /* 만복: 거부. 원작처럼 과식 카운트는 올리되 체중·배고픔은 변하지 않음 */
         d->overfeed++;
         d->is_overfed    = true;
         d->overfeed_time = time(NULL);
-    } else {
-        d->hungry++;
+        return false;
     }
-    /* 먹이줄 때마다 체중 +1 */
+
+    d->hungry++;
     if (d->weight < MAX_WEIGHT) d->weight++;
+    return true;
 }
 
-void action_train(GameData *game) {
+bool action_train(GameData *game) {
     Digimon *d = &game->current;
-    /* 성장기 미만, 수면 중, DP 없으면 훈련 불가 */
-    if (d->level < ROOKIE || d->is_sleep || d->dp <= 0) return;
+    /* 성장기 미만, 수면 중, DP 없음, 근력 만복 → 훈련 거부 */
+    if (d->level < ROOKIE || d->is_sleep || d->dp <= 0 || d->strength >= MAX_STRENGTH)
+        return false;
 
     d->dp--;
-    if (d->strength < MAX_STRENGTH) d->strength++;
+    d->strength++;
 
     /* 훈련으로 체중 감소 (base_weight 미만으로는 내려가지 않음) */
     int base_w = digimon_table[d->table_idx].base_weight;
@@ -375,6 +383,7 @@ void action_train(GameData *game) {
     /* 4회마다 노력치 +1 */
     d->train_count++;
     if (d->train_count % 4 == 0) d->effort++;
+    return true;
 }
 
 void action_clean(GameData *game) {
@@ -392,6 +401,7 @@ void action_sleep_toggle(GameData *game) {
     Digimon *d = &game->current;
     if (d->level == EGG) return;
     d->is_sleep = !d->is_sleep;
+    d->is_manual_sleep = d->is_sleep; // 플레이어가 직접 조작 = 낮잠
 }
 
 /* =========================================================
@@ -421,7 +431,9 @@ void gen_cpu_opponent(BattleOpponent *opp, Level level) {
         return;
     }
     int idx  = cands[rand() % cnt];
-    strncpy_s(opp->name, MAX_NAME_LEN, digimon_table[idx].name, MAX_NAME_LEN - 1);
+    strncpy_s(opp->name,     MAX_NAME_LEN, digimon_table[idx].name,     MAX_NAME_LEN - 1);
+    strncpy_s(opp->eng_name, MAX_NAME_LEN, digimon_table[idx].eng_name, MAX_NAME_LEN - 1);
+    opp->table_idx = idx;
     int base = digimon_table[idx].base_power;
     int var  = base / 5;   /* ±20% */
     opp->power = base + (rand() % (var * 2 + 1)) - var;
@@ -469,14 +481,28 @@ void apply_offline_time(GameData *game) {
         return;
     }
 
-    /* ── 오프라인 중 자동 기상 ──────────────────────────────────
-     *   수면 중 종료 → 기상 시각(wake_hour)이 오프라인 구간 안에
-     *   있었으면 자동 기상하고, 배고픔·근력 타이머를 기상 시각으로
-     *   앞당긴다. 이후 hunger/strength 블록이 기상~now 구간을 계산. */
+    /* ── 오프라인 수면: DP 회복 + 자동 기상 ────────────────────
+     *   수면 종료 시각 = 기상 시각(wake_hour) or 현재(아직 수면 중)
+     *   그 구간만큼 sleep 카운터·DP 회복 적용 후 자동 기상 처리.  */
     if (d->is_sleep) {
-        time_t wake_at = next_hour_after(from, info->wake_hour);
+        time_t wake_at   = next_hour_after(from, info->wake_hour);
+        time_t sleep_end = (wake_at < now) ? wake_at : now;
+        long long sleep_secs = (long long)(sleep_end - from);
+
+        if (sleep_secs > 0) {
+            int dp_gain = (int)(sleep_secs / HOUR) * SLEEP_POWER_PER_HOUR;
+            d->sleep += (int)sleep_secs;
+            d->dp    += dp_gain;
+            if (d->dp > d->max_dp) d->dp = d->max_dp;
+
+            /* 낮잠(수동) 중 오프라인 시간은 진화 타이머에서 제외 */
+            if (d->is_manual_sleep)
+                d->level_start_time += (time_t)sleep_secs;
+        }
+
         if (wake_at < now) {
-            d->is_sleep           = false;
+            d->is_sleep        = false;
+            d->is_manual_sleep = false;
             d->last_hungry_tick   = wake_at;
             d->last_strength_tick = wake_at;
         }
@@ -568,6 +594,7 @@ bool save_game(const GameData *game) {
     fprintf(fp, "wins=%d\n",              d->wins);
     fprintf(fp, "sleep=%d\n",             d->sleep);
     fprintf(fp, "is_sleep=%d\n",          (int)d->is_sleep);
+    fprintf(fp, "is_manual_sleep=%d\n",   (int)d->is_manual_sleep);
     fprintf(fp, "is_overfed=%d\n",        (int)d->is_overfed);
     fprintf(fp, "injuries=%d\n",          d->injuries);
     fprintf(fp, "is_injuries=%d\n",       (int)d->is_injuries);
@@ -652,6 +679,7 @@ bool load_game(GameData *game) {
         KI("wins",              d->wins)
         KI("sleep",             d->sleep)
         KB("is_sleep",          d->is_sleep)
+        KB("is_manual_sleep",   d->is_manual_sleep)
         KB("is_overfed",        d->is_overfed)
         KI("injuries",          d->injuries)
         KB("is_injuries",       d->is_injuries)
@@ -702,10 +730,12 @@ void update_status(GameData* game) {
         time_t prev = game->last_update;
         if (crossed_hour(prev, now, info->sleep_hour)) {
             if (!d->is_sleep) d->care_mistakes++;
-            d->is_sleep = true;
+            d->is_sleep        = true;
+            d->is_manual_sleep = false; // 자동 취침
         }
         if (crossed_hour(prev, now, info->wake_hour)) {
-            d->is_sleep = false;
+            d->is_sleep        = false;
+            d->is_manual_sleep = false;
         }
     }
 

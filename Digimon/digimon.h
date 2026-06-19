@@ -9,7 +9,6 @@
  * ========================================================= */
 
 #define MAX_DIGIMON_TABLE_SIZE  100   // digimon_table 최대 항목 수
-#define MAX_DEX_SIZE            100   // 도감 최대 항목 수
 #define MAX_NAME_LEN            100   // 이름 버퍼 크기
 
 #define MAX_AGE                 99
@@ -83,7 +82,8 @@ typedef enum {
     IDX_PUPPETMON    = 14, // 퍼펫몬
     IDX_BLITZGREYMON = 15, // 블리츠그레이몬
     IDX_BANCHOUKOMON = 16, // 반초콩알몬
-    DIGIMON_TABLE_SIZE = 17
+    IDX_OMEGAMON     = 17, // 오메가몬
+    DIGIMON_TABLE_SIZE = 18
 } DigimonIdx;
 
 /* =========================================================
@@ -126,7 +126,8 @@ typedef struct {
 
     /* --- 숨김 정보 --- */
     int  sleep;         // 누적 수면 시간(초), SLEEP_FULL_RECOVERY 도달 시 DP 완전 회복
-    bool is_sleep;      // 수면 중 여부 (수면 중 배고픔/체력 감소 없음, 낮잠은 진화 타이머 정지)
+    bool is_sleep;         // 수면 중 여부 (수면 중 배고픔/체력 감소 없음, 낮잠은 진화 타이머 정지)
+    bool is_manual_sleep;  // true=플레이어가 수동으로 재움(낮잠), false=자동 취침(밤)
     bool is_overfed;    // 현재 과식 상태 (hungry <= 3 되면 해제, 해제 전까지 배고픔 감소 속도 저하)
     int  injuries;      // 누적 부상 횟수
     bool is_injuries;   // 현재 부상 상태 여부
@@ -143,21 +144,11 @@ typedef struct {
 } Digimon;
 
 /**
- * 도감 항목 하나.
- * digimon_table 인덱스와 대응하도록 관리한다.
- */
-typedef struct {
-    char name[MAX_NAME_LEN]; // 디지몬 이름 (digimon_table과 동일)
-    bool found;              // true=도감 등록 완료, false=미등록
-} DigimonDex;
-
-/**
  * 테이머(플레이어) 정보.
  */
 typedef struct {
-    char       name[MAX_NAME_LEN];    // 테이머 이름
-    int        battles;               // 총 배틀 전적
-    DigimonDex dex[MAX_DEX_SIZE];     // 디지몬 도감
+    char name[MAX_NAME_LEN]; // 테이머 이름
+    int  battles;            // 총 배틀 전적
     bool is_digimon;
 } Tamer;
 
@@ -178,15 +169,16 @@ typedef struct {
  * 현재 활성 디지몬(Digimon)과 달리 고정된 원본 데이터만 보관한다.
  */
 typedef struct {
-    char        name[MAX_NAME_LEN]; // 디지몬 이름
-    Level       level;              // 진화 단계
-    int         base_power;         // 기본 공격력
-    int         base_weight;        // 기본(최저) 체중(g)
-    DigimonType type;               // 속성
-    int         hungry_tick;        // 배고픔 1 감소 + 똥 1 증가 주기(초)
-    int         strength_tick;      // 근력 1 감소 주기(초)
-    int         sleep_hour;         // 취침 시각 (0~23)
-    int         wake_hour;          // 기상 시각 (0~23)
+    char        name[MAX_NAME_LEN];     // 디지몬 이름 (한글)
+    char        eng_name[MAX_NAME_LEN]; // 디지몬 이름 (영문 대문자, A~Z)
+    Level       level;                  // 진화 단계
+    int         base_power;             // 기본 공격력
+    int         base_weight;            // 기본(최저) 체중(g)
+    DigimonType type;                   // 속성
+    int         hungry_tick;            // 배고픔 1 감소 + 똥 1 증가 주기(초)
+    int         strength_tick;          // 근력 1 감소 주기(초)
+    int         sleep_hour;             // 취침 시각 (0~23)
+    int         wake_hour;              // 기상 시각 (0~23)
 } DigimonInfo;
 
 /* =========================================================
@@ -255,7 +247,7 @@ void apply_offline_time(GameData *game);
  *   버전이 달라지면 load_game()이 false를 반환해 새 게임으로 시작된다.
  * ========================================================= */
 #define SAVE_FILE    "digimon.txt"
-#define SAVE_VERSION 2u
+#define SAVE_VERSION 3u
 
 /**
  * save_game - 현재 게임 상태를 파일에 저장한다.
@@ -317,7 +309,7 @@ void init_digimon(GameData *game);
  *   hungry == MAX_HUNGRY: 과식 (overfeed +1, is_overfed = true)
  *   알 상태 또는 수면 중에는 무시된다.
  */
-void action_feed(GameData *game);
+bool action_feed(GameData *game);  /* true = 급식 성공, false = 거부 (만복·수면·알) */
 
 /**
  * action_train - 훈련시킨다.
@@ -325,7 +317,7 @@ void action_feed(GameData *game);
  *   dp -1, strength +1 (최대 MAX_STRENGTH), weight -1 (최저 base_weight)
  *   train_count 4회마다 effort +1
  */
-void action_train(GameData *game);
+bool action_train(GameData *game); /* true = 훈련 성공, false = 거부 (근력 만복·DP 없음·수면·성장기 미만) */
 
 /**
  * action_clean - 똥을 치운다.
@@ -351,7 +343,9 @@ void action_sleep_toggle(GameData *game);
 
 typedef struct {
     char name[MAX_NAME_LEN];
+    char eng_name[MAX_NAME_LEN];
     int  power;
+    int  table_idx;
 } BattleOpponent;
 
 typedef enum {

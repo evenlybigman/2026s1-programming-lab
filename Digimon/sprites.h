@@ -81,17 +81,6 @@ extern int sprite_botamon_6[SPRITE_H][SPRITE_W]; /* eat2 */
 extern int sprite_botamon_7[SPRITE_H][SPRITE_W]; /* injury */
 extern int sprite_botamon_8[SPRITE_H][SPRITE_W]; /* sleep */
 
-/* ── 아구몬 추가 프레임 — TODO: 그려야 함 */
-
-extern int sprite_agumon_1    [SPRITE_H][SPRITE_W]; /* 먹기1     */
-extern int sprite_agumon_2    [SPRITE_H][SPRITE_W]; /* 먹기2     */
-extern int sprite_agumon_3    [SPRITE_H][SPRITE_W]; /* 아픔/부상 */
-extern int sprite_agumon_4    [SPRITE_H][SPRITE_W]; /* 잠        */
-extern int sprite_agumon_5[SPRITE_H][SPRITE_W]; /* eat1 */
-extern int sprite_agumon_6[SPRITE_H][SPRITE_W]; /* eat2 */
-extern int sprite_agumon_7[SPRITE_H][SPRITE_W]; /* injury */
-extern int sprite_agumon_8[SPRITE_H][SPRITE_W]; /* sleep */
-
 /* ── 코로몬 (BABY2) — TODO: 그려야 함 */
 
 extern int sprite_koromon_1   [SPRITE_H][SPRITE_W]; /* 먹기1     */
@@ -102,6 +91,17 @@ extern int sprite_koromon_5[SPRITE_H][SPRITE_W]; /* eat1 */
 extern int sprite_koromon_6[SPRITE_H][SPRITE_W]; /* eat2 */
 extern int sprite_koromon_7[SPRITE_H][SPRITE_W]; /* injury */
 extern int sprite_koromon_8[SPRITE_H][SPRITE_W]; /* sleep */
+
+/* ── 아구몬 (ROOKIE) — TODO: 그려야 함 */
+
+extern int sprite_agumon_1    [SPRITE_H][SPRITE_W]; /* 먹기1     */
+extern int sprite_agumon_2    [SPRITE_H][SPRITE_W]; /* 먹기2     */
+extern int sprite_agumon_3    [SPRITE_H][SPRITE_W]; /* 아픔/부상 */
+extern int sprite_agumon_4    [SPRITE_H][SPRITE_W]; /* 잠        */
+extern int sprite_agumon_5[SPRITE_H][SPRITE_W]; /* eat1 */
+extern int sprite_agumon_6[SPRITE_H][SPRITE_W]; /* eat2 */
+extern int sprite_agumon_7[SPRITE_H][SPRITE_W]; /* injury */
+extern int sprite_agumon_8[SPRITE_H][SPRITE_W]; /* sleep */
 
 /* ── 베타몬 (ROOKIE) — TODO: 그려야 함 */
 
@@ -235,7 +235,70 @@ extern int sprite_poop1   [UI_SPRITE_H][UI_SPRITE_W]; /* 똥 아이콘 1 */
 extern int sprite_poop2   [UI_SPRITE_H][UI_SPRITE_W]; /* 똥 아이콘 2 */
 extern int sprite_zzz     [UI_SPRITE_H][UI_SPRITE_W]; /* 수면 Zzz           — TODO: 그려야 함 */
 extern int sprite_medicine[UI_SPRITE_H][UI_SPRITE_W]; /* 부상 약/주사기     — TODO: 그려야 함 */
-extern int sprite_dead    [SPRITE_H][SPRITE_W];        /* 사망 화면 (16×16) — TODO: 그려야 함 */
+extern int sprite_dead    [SPRITE_H][SPRITE_W];        /* 사망 해골 (16×16) */
+extern int sprite_brick1  [SPRITE_H][SPRITE_W];        /* 훈련 건물 — 완전 */
+extern int sprite_brick2  [SPRITE_H][SPRITE_W];        /* 훈련 건물 — 파손 */
+extern int sprite_grave   [SPRITE_H][SPRITE_W];        /* 사망 비석 */
+
+/* =========================================================
+ * 배틀 진입 타이틀 배너 (32×16)
+ *   배틀 시작 연출용. drawBattleTitle() 등으로 표시.
+ * ========================================================= */
+#define BATTLE_W 32
+
+extern int sprite_battle_title[SPRITE_H][BATTLE_W];   /* "BATTLE" 진입 배너 */
+
+/* =========================================================
+ * 공격 이펙트 아이콘 (8×8) — 43종
+ *   배틀씬 스킬 연출용. sprite_atk_table[i] 로 접근.
+ * ========================================================= */
+#define ATK_SPRITE_COUNT 43
+
+extern int sprite_atk_01[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_02[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_03[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_04[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_05[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_06[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_07[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_08[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_09[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_10[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_11[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_12[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_13[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_14[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_15[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_16[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_17[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_18[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_19[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_20[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_21[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_22[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_23[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_24[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_25[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_26[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_27[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_28[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_29[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_30[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_31[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_32[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_33[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_34[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_35[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_36[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_37[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_38[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_39[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_40[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_41[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_42[UI_SPRITE_H][UI_SPRITE_W];
+extern int sprite_atk_43[UI_SPRITE_H][UI_SPRITE_W];
+
+extern int (*sprite_atk_table[ATK_SPRITE_COUNT])[UI_SPRITE_W];
 
 /* =========================================================
  * 픽셀 폰트 / UI 아이콘
@@ -248,6 +311,8 @@ extern int font_heart          [FONT_H][FONT_W];
 extern int font_heart_empty    [FONT_H][FONT_W];
 extern int font_digit      [10][DIGIT_H][DIGIT_W];
 extern int font_mini       [26][MINI_H][MINI_W];
+extern int font_label      [26][DIGIT_H][DIGIT_W];
+extern int font_label_lc   [26][DIGIT_H][DIGIT_W];
 extern int font_name       [26][NAME_H][NAME_W];
 
 #endif /* SPRITES_H */
